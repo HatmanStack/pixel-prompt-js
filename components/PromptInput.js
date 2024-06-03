@@ -21,7 +21,7 @@ export default function PromptInputComponent({ passPrompt }) {
       textAlign='center'
       onChangeText={handleTextChange} 
       value={text}
-      maxLength={200} 
+      maxLength={2000} 
     />
   );
 
