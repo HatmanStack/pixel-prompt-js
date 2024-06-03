@@ -44,12 +44,14 @@ const styles = StyleSheet.create({
   placeholderStyle: {
     color: colors.color,
     fontSize: 25,
+    fontFamily: 'Sigmar',
     textAlign: 'center',
     letterSpacing: 3,
   },
   selectedTextStyle: {
     color: colors.color,
     fontSize: 20,
+    fontFamily: 'Sigmar',
     letterSpacing: 3,
     textAlign: 'center',
   },

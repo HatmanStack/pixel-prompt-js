@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 3,
     width: 350,
+    fontFamily: 'Sigmar'
   },
   sliderValue: {
     color: colors.color,
@@ -78,6 +79,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingBottom: 30,
     width: 350,
+    fontFamily: 'Sigmar'
   },
   
 });

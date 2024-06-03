@@ -17,7 +17,7 @@ const inference = new HfInference(HF_TOKEN);
 const assetImage = require('./assets/avocado.jpg');
 
 export default function App() {
-  useFonts({'Sigmar-Regular': require('./assets/Sigmar/Sigmar-Regular.ttf')});
+  useFonts({'Sigmar': require('./assets/Sigmar/Sigmar-Regular.ttf')});
   const [inferredImage, setInferredImage] = useState(assetImage);
   const [steps, setSteps] = useState(45);
   const [guidance, setGuidance] = useState(10);
@@ -174,7 +174,6 @@ const colors = {
 const styles = StyleSheet.create({
   titlecontainer: {
     backgroundColor: colors.backgroundColor,
-    fontFamily: 'Sigmar-Regular',
     position: 'absolute', 
     top: 0,
     left: 0,
@@ -199,7 +198,8 @@ const styles = StyleSheet.create({
   button:{
     borderRadius: 4,
     paddingHorizontal: 32,
-    elevation: 3
+    elevation: 3,
+    fontFamily: 'Sigmar',
   },
   activityIndicator:{
     marginLeft: 50
@@ -210,7 +210,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     letterSpacing: 2,
-    lineHeight: 30
+    lineHeight: 30,
+    fontFamily: 'Sigmar',
   },
   ScrollView: {
     backgroundColor: colors.backgroundColor,

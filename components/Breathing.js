@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     },
     heading: {
       fontWeight: 'bold',
+      fontFamily: 'Sigmar',
       color: colors.color,
       paddingTop: 25,
       position:'absolute', 
