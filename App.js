@@ -56,8 +56,6 @@ export default function App() {
 
   useEffect(() => { 
     if(skip){
-      console.log(`text2image ${parameters}`)
-    if(parameters !== 'Prompt'  ){
       setActivity(true);
       setModelError(false);
       let alteredPrompt = '';
@@ -105,7 +103,6 @@ export default function App() {
         setModelError(true);
         console.log(error);
       });
-    }
   }
   setSkip(true);
   },[parameters]);
@@ -122,7 +119,7 @@ export default function App() {
         alteredPrompt = prompt;
       }
       alteredPrompt = `Complete this prompt for a Stable Diffusion Model. Return only the completed Prompt: ${alteredPrompt}`;
-      console.log(alteredPrompt);
+      
       inference.chatCompletion({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
         messages: [{ role: "user", content: alteredPrompt }],
