@@ -65,7 +65,7 @@ All the models are opensource and available on HuggingFace.
 
 ### Prompts
 
-- **mistralai/Mistral-7B-Instruct-v0.3'**
+- **mistralai/Mistral-7B-Instruct-v0.3**
 
 ## License
 

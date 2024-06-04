@@ -12,7 +12,8 @@ import PromptInputComponent from './components/PromptInput';
 import BreathingComponent from './components/Breathing';
 import DropDownComponent from './components/DropDown';
 
-const inference = new HfInference('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');
+const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
+const inference = new HfInference(HF_TOKEN);
 const assetImage = require('./assets/avocado.jpg');
 
 export default function App() {
