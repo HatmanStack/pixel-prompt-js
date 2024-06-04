@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, TextInput, useWindowDimensions } from 'react-native';
 
-export default function PromptInputComponent({ passPrompt }) {
+export default function PromptInputComponent({ setPrompt, inferredPrompt}) {
   const [text, setText] = React.useState('');
   const {width} = useWindowDimensions();
   
   const textInputStyle = { 
     ...styles.input, width: width > 500 ? 500 : width - 80};
- 
+
+    useEffect(() => {
+      setText(inferredPrompt);
+      setPrompt(inferredPrompt);
+    }, [inferredPrompt]);
+
   const handleTextChange = (x) => {
     setText(x);
-    passPrompt(x);
+    setPrompt(x);
   }
 
   return (
@@ -43,7 +48,7 @@ const styles = StyleSheet.create({
     borderStartWidth: 10,
     borderEndWidth: 10,
     borderRadius: 6,
-    height: 80,
+    height: 200,
     paddingLeft: 10,
     paddingRight: 10,
     fontSize: 20,

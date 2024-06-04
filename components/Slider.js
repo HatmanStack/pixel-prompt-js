@@ -2,7 +2,7 @@ import * as React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Slider from "@react-native-community/slider";
 
-export default function SliderComponent({ passSteps, passGuidance }) {
+export default function SliderComponent({ setSteps, setGuidance }) {
   const [samplingValue, setSamplingValue] = React.useState(45);
   const [guidanceValue, setGuidanceValue] = React.useState(10);
   
@@ -10,13 +10,13 @@ export default function SliderComponent({ passSteps, passGuidance }) {
   // Handle sampling steps change
   const handleStepChange = (x) => {
     setSamplingValue(x);
-    passSteps(x);
+    setSteps(x);
   }
 
   // Handle guidance change
   const handleGuidanceChange = (x) => {
     setGuidanceValue(parseFloat(x.toFixed(2)));
-    passGuidance(parseFloat(x.toFixed(2)));
+    setGuidance(parseFloat(x.toFixed(2)));
   }
 
   return (

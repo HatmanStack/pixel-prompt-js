@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View, ScrollView, Text, Pressable, Dimensions, Image } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, ScrollView, Text, Pressable, useWindowDimensions, Image } from 'react-native';
 import { registerRootComponent } from 'expo';
 import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import {useFonts } from 'expo-font'; 
 import { HfInference } from "@huggingface/inference";
-
+import seeds from './assets/seeds.json'; 
 import SliderComponent from './components/Slider';
 import PromptInputComponent from './components/PromptInput';
 import BreathingComponent from './components/Breathing';
 import DropDownComponent from './components/DropDown';
 
-const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
-const inference = new HfInference(HF_TOKEN);
+const inference = new HfInference('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');
 const assetImage = require('./assets/avocado.jpg');
 
 export default function App() {
@@ -24,18 +23,18 @@ export default function App() {
   const [skip, setSkip] = useState(false);
   const [modelID, setModelID] = useState('stabilityai/stable-diffusion-xl-base-1.0')
   const [prompt, setPrompt] = useState('Avocado Armchair');
+  const [inferredPrompt, setInferredPrompt] = useState('');
   const [parameters, setParameters] = useState('')
   const [activity, setActivity] = useState(false);
   const [modelError, setModelError] = useState(false);
   const [returnedPrompt, setReturnedPrompt] = useState('Avocado Armchair');
-  const windowWidth = Dimensions.get('window').width;
-
-  const passPromptWrapper = (x) => {setPrompt(x)};
-  const passStepsWrapper = (x) => {setSteps(x)};
-  const passGuidanceWrapper = (x) => {setGuidance(x)};
+  const [textInference, setTextInference] = useState(false);
+  const {width} = useWindowDimensions();
+  
   const passModelIDWrapper = (x) => {
       setModelError(false);
-      setModelID(x)};
+      setModelID(x)
+    };
   
   useEffect(() => {
     const checkForUpdates = async () => {
@@ -56,6 +55,8 @@ export default function App() {
 
   useEffect(() => { 
     if(skip){
+      console.log(`text2image ${parameters}`)
+    if(parameters !== 'Prompt'  ){
       setActivity(true);
       setModelError(false);
       let alteredPrompt = '';
@@ -75,7 +76,6 @@ export default function App() {
       inference.textToImage({
         model: modelID,
         inputs: alteredPrompt,
-        
         parameters: {
           negative_prompt: 'blurry',
           guidance: guidance,
@@ -105,35 +105,70 @@ export default function App() {
         console.log(error);
       });
     }
+  }
   setSkip(true);
   },[parameters]);
+
+  useEffect(() => { 
+    if(skip && textInference){
+      setActivity(true);
+      setModelError(false);
+      let alteredPrompt = '';     
+      if(prompt === 'Avocado Armchair' || prompt === ''){
+        const randomIndex = Math.floor(Math.random() * seeds.seeds.length);
+        alteredPrompt = seeds.seeds[randomIndex];
+      }else {
+        alteredPrompt = prompt;
+      }
+      alteredPrompt = `Complete this prompt for a Stable Diffusion Model. Return only the completed Prompt: ${alteredPrompt}`;
+      console.log(alteredPrompt);
+      inference.chatCompletion({
+        model: 'mistralai/Mistral-7B-Instruct-v0.3',
+        messages: [{ role: "user", content: alteredPrompt }],
+        max_tokens: 300,
+      })
+      .then(response => {
+        setInferredPrompt(response.choices[0].message.content);
+        setActivity(false);
+      })
+      .catch(error => console.error('Error:', error));
+      }
+  setTextInference(false);
+  setSkip(true);
+  },[textInference]);
 
   return (
       // Main container
       <View style={styles.titlecontainer}>
         <BreathingComponent /> 
         <ScrollView scrollY={true} style={styles.ScrollView} showsVerticalScrollIndicator={false}> 
-          {windowWidth > 1000 ? (<View style={styles.rowContainer}>
+          {width > 1000 ? (<View style={styles.rowContainer}>
               {/* Left column */}
               <View style={styles.columnContainer}>
                   <View>
-                    <PromptInputComponent passPrompt={passPromptWrapper} />
+                    <PromptInputComponent setPrompt={setPrompt} inferredPrompt={inferredPrompt}/>
                   </View>
                   <View style={styles.rowContainer}>
                     <DropDownComponent passModelID={passModelIDWrapper} />
                       <View style={styles.columnContainer}>
                       {activity ?
                         <ActivityIndicator size="large" color="#B58392" style={styles.activityIndicator} /> :
+                        <div >
+                        <Pressable
+                          onPress={() => { setTextInference(true); } }
+                          style={({ pressed }) => [{ backgroundColor: pressed ? '#958DA5' : '#9DA58D', }, styles.button]}>
+                          {({ pressed }) => (<Text style={styles.promptText}>{pressed ? 'INFERRED!' : 'Prompt'}</Text>)}
+                        </Pressable>
                         <Pressable
                           onPress={() => { setParameters(`${prompt}-${steps}-${guidance}-${modelID}`); } }
                           style={({ pressed }) => [{ backgroundColor: pressed ? '#9DA58D' : '#958DA5', }, styles.button]}>
                           {({ pressed }) => (<Text style={styles.promptText}>{pressed ? 'INFERRED!' : 'Inference'}</Text>)}
-                        </Pressable>}
+                        </Pressable></div>}
                       {modelError ? <Text style={styles.promptText}>Model Error!</Text>:<></>}
                       </View>
                     </View>
                   <View>
-                    <SliderComponent passSteps={passStepsWrapper} passGuidance={passGuidanceWrapper} />
+                    <SliderComponent setSteps={setSteps} setGuidance={setGuidance} />
                   </View>
                 </View>
                 {/* Right column */}
@@ -146,17 +181,24 @@ export default function App() {
              
           </View>) : 
           (<View style={styles.columnContainer}>
-            <PromptInputComponent passPrompt={passPromptWrapper} />
+            <PromptInputComponent setPrompt={setPrompt} inferredPrompt={inferredPrompt} />
                 <DropDownComponent passModelID={passModelIDWrapper} />
                 {activity ?
                   <ActivityIndicator size="large" color="#B58392"/> :
+                  <div >
+                  <Pressable
+                    onPress={() => { setTextInference(true); } }
+                    style={({ pressed }) => [{ backgroundColor: pressed ? '#958DA5' : '#9DA58D', }, styles.button]}>
+                    {({ pressed }) => (<Text style={styles.promptText}>{pressed ? 'INFERRED!' : 'Prompt'}</Text>)}
+                  </Pressable>
                   <Pressable
                     onPress={() => { setParameters(`${prompt}-${steps}-${guidance}-${modelID}`); } }
                     style={({ pressed }) => [{ backgroundColor: pressed ? '#9DA58D' : '#958DA5', }, styles.button]}>
                     {({ pressed }) => (<Text style={styles.promptText}>{pressed ? 'INFERRED!' : 'Inference'}</Text>)}
-                  </Pressable>}
+                  </Pressable>
+                  </div>}
                   {modelError ? <Text style={styles.promptText}>Model Error!</Text>:<></>}
-                <SliderComponent passSteps={passStepsWrapper} passGuidance={passGuidanceWrapper} />   
+                <SliderComponent setSteps={setSteps} setGuidance={setGuidance} />   
                 {inferredImage && <Image source={inferredImage} style={styles.imageStyle} />}
                 <Text style={styles.promptText}>{returnedPrompt}</Text>
             </View>)}
@@ -196,6 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column', 
   },
   button:{
+    margin: 20,
     borderRadius: 4,
     paddingHorizontal: 32,
     elevation: 3,
