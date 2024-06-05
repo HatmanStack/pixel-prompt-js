@@ -1,17 +1,19 @@
-import { StyleSheet } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import { StyleSheet } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 
 const data = [
-  { label: 'Stable Diffusion', value: 'stabilityai/stable-diffusion-xl-base-1.0' },
-  { label: 'Open Journey', value: 'prompthero/openjourney' },
-  { label: 'Photo', value: 'dreamlike-art/dreamlike-photoreal-2.0' },
-  { label: 'Arcane', value: 'nitrosocke/Arcane-Diffusion' },
-  { label: 'Van-Gogh', value: 'dallinmackay/Van-Gogh-diffusion' },
-  { label: 'Robots', value: 'nousr/robo-diffusion' }
+  {
+    label: "Stable Diffusion",
+    value: "stabilityai/stable-diffusion-xl-base-1.0",
+  },
+  { label: "Open Journey", value: "prompthero/openjourney" },
+  { label: "Photo", value: "dreamlike-art/dreamlike-photoreal-2.0" },
+  { label: "Arcane", value: "nitrosocke/Arcane-Diffusion" },
+  { label: "Van-Gogh", value: "dallinmackay/Van-Gogh-diffusion" },
+  { label: "Robots", value: "nousr/robo-diffusion" },
 ];
 
-export default function DropDownComponent({passModelID}){
-
+export default function DropDownComponent({ passModelID }) {
   return (
     <Dropdown
       style={styles.dropdown}
@@ -21,17 +23,16 @@ export default function DropDownComponent({passModelID}){
       labelField="label"
       valueField="value"
       placeholder="Model ID"
-      onChange={item => {
+      onChange={(item) => {
         passModelID(item.value);
       }}
-      
     />
   );
 }
 
 const colors = {
-  borderBottomColor: '#9DA58D',
-  color: '#FFFFFF',
+  borderBottomColor: "#9DA58D",
+  color: "#FFFFFF",
 };
 const styles = StyleSheet.create({
   dropdown: {
@@ -44,15 +45,15 @@ const styles = StyleSheet.create({
   placeholderStyle: {
     color: colors.color,
     fontSize: 25,
-    fontFamily: 'Sigmar',
-    textAlign: 'center',
+    fontFamily: "Sigmar",
+    textAlign: "center",
     letterSpacing: 3,
   },
   selectedTextStyle: {
     color: colors.color,
     fontSize: 20,
-    fontFamily: 'Sigmar',
+    fontFamily: "Sigmar",
     letterSpacing: 3,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

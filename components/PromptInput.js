@@ -1,41 +1,42 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, TextInput, useWindowDimensions } from 'react-native';
+import React, { useEffect } from "react";
+import { StyleSheet, TextInput, useWindowDimensions } from "react-native";
 
-export default function PromptInputComponent({ setPrompt, inferredPrompt}) {
-  const [text, setText] = React.useState('');
-  const {width} = useWindowDimensions();
-  
-  const textInputStyle = { 
-    ...styles.input, width: width > 500 ? 500 : width - 80};
+export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
+  const [text, setText] = React.useState("");
+  const { width } = useWindowDimensions();
 
-    useEffect(() => {
-      setText(inferredPrompt);
-      setPrompt(inferredPrompt);
-    }, [inferredPrompt]);
+  const textInputStyle = {
+    ...styles.input,
+    width: width > 500 ? 500 : width - 80,
+  };
+
+  useEffect(() => {
+    setText(inferredPrompt);
+    setPrompt(inferredPrompt);
+  }, [inferredPrompt]);
 
   const handleTextChange = (x) => {
     setText(x);
     setPrompt(x);
-  }
+  };
 
   return (
-    <TextInput 
+    <TextInput
       style={textInputStyle}
-      placeholder='Avocado Armchair'
+      placeholder="Avocado Armchair"
       multiline
-      textAlign='center'
-      onChangeText={handleTextChange} 
+      textAlign="center"
+      onChangeText={handleTextChange}
       value={text}
-      maxLength={2000} 
+      maxLength={20000}
     />
   );
-
 }
 
 const colors = {
-  backgroundColor: '#FFFFFF',
-  borderColor: '#B58392',
-  color: '#000000',
+  backgroundColor: "#FFFFFF",
+  borderColor: "#B58392",
+  color: "#000000",
 };
 
 const styles = StyleSheet.create({
@@ -53,6 +54,6 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     fontSize: 20,
     color: colors.color,
-    fontFamily: 'Sigmar'
+    fontFamily: "Sigmar",
   },
 });
