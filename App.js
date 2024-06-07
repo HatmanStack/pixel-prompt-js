@@ -79,6 +79,7 @@ const App = () => {
   }, []);
 
   const swapImage = () => {
+    setInferredImage(imageSource);
     setImageSource(inferredImage);
   };
 
