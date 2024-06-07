@@ -40,7 +40,7 @@ export default {
   },
   android: {
     package: 'gemenielabs.pixel_prompt',
-    versionCode: 4
+    versionCode: 5
   },
   ios: {}
 }

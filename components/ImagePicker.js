@@ -77,11 +77,9 @@ const MyImagePicker = ({
         </View>
       </View>
 
-      {imageSource ? (
-        <Image source={imageSource} style={styles.image} />
-      ) : (
-        <Image source={require("../assets/busta.png")} style={styles.image} />
-      )}
+      {imageSource &&
+        <Image source={typeof imageSource === 'number' ? imageSource : { uri: imageSource }} style={styles.image} />
+        }
       <Pressable style={styles.selectButton} onPress={selectImage}>
         <Text style={styles.promptText}>Select</Text>
       </Pressable>

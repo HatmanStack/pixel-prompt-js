@@ -11,8 +11,10 @@ export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
   };
 
   useEffect(() => {
+    if(inferredPrompt){
     setText(inferredPrompt);
     setPrompt(inferredPrompt);
+    }
   }, [inferredPrompt]);
 
   const handleTextChange = (x) => {
