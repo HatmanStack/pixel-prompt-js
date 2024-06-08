@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, TextInput, useWindowDimensions } from "react-native";
+import { Pressable, StyleSheet, TextInput, useWindowDimensions, Image, View} from "react-native";
 
 export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
   const [text, setText] = React.useState("");
@@ -14,7 +14,7 @@ export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
     if(inferredPrompt){
     setText(inferredPrompt);
     setPrompt(inferredPrompt);
-    }
+  }
   }, [inferredPrompt]);
 
   const handleTextChange = (x) => {
@@ -23,6 +23,9 @@ export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
   };
 
   return (
+   
+    <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+    
     <TextInput
       style={textInputStyle}
       placeholder="Avocado Armchair"
@@ -32,6 +35,33 @@ export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
       value={text}
       maxLength={20000}
     />
+    <Pressable
+      style={({ pressed }) => [
+        { 
+          height: pressed ? 25 : 30,
+          width: pressed ? 25 : 30,
+          backgroundColor: pressed ? "#B58392":"#3a3c3f" ,
+          borderRadius: 6,
+          padding: 10,
+          marginTop: 10,
+          alignItems: 'center', 
+          justifyContent: 'center', 
+        },
+      ]}
+      onPress={() => {
+        setText("");
+        setPrompt("");
+      }}>
+        <Image 
+          source={require('../assets/close.png')} 
+          style={{
+            width: '100%', 
+            height: '100%', 
+            resizeMode: 'contain', 
+          }} 
+        />
+    </Pressable>
+   </View>
   );
 }
 
@@ -57,5 +87,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.color,
     fontFamily: "Sigmar",
+    marginRight: 10,
   },
 });
