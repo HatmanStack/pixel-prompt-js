@@ -57,7 +57,7 @@ const colors = {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingTop: 50,
+    paddingTop: 20,
   },
   slider: {
     width: 350,
