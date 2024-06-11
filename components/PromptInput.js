@@ -28,7 +28,7 @@ export default function PromptInputComponent({ setPrompt, inferredPrompt }) {
     
     <TextInput
       style={textInputStyle}
-      placeholder="Avocado Armchair"
+      placeholder=""
       multiline
       textAlign="center"
       onChangeText={handleTextChange}

@@ -2,15 +2,25 @@ import { StyleSheet } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 
 const data = [
+  { label: "Step Aware", value: "SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep" },
   {
     label: "Stable Diffusion",
     value: "stabilityai/stable-diffusion-xl-base-1.0",
   },
-  { label: "Open Journey", value: "prompthero/openjourney" },
-  { label: "Photo", value: "dreamlike-art/dreamlike-photoreal-2.0" },
-  { label: "Arcane", value: "nitrosocke/Arcane-Diffusion" },
+  { label: "Voxel", value: "Fictiverse/Voxel_XL_Lora" },
+  { label: "Paper Cut Out", value: "Fictiverse/Stable_Diffusion_PaperCut_Model" },
   { label: "Van-Gogh", value: "dallinmackay/Van-Gogh-diffusion" },
   { label: "Robots", value: "nousr/robo-diffusion" },
+  { label: "Anime", value: "Eugeoter/artiwaifu-diffusion-1.0" },
+  { label: "Arcane", value: "nitrosocke/Arcane-Diffusion" },
+  { label: "Balloon Art", value: "Fictiverse/Stable_Diffusion_BalloonArt_Model" },
+  { label: "Open Journey", value: "prompthero/openjourney" },
+  { label: "Flintstones", value: "juliajoanna/sdxl-flintstones_finetuning_1" },
+  { label: "SegMind", value: "segmind/Segmind-Vega" },
+  { label: "Mickey 1928", value: "Pclanglais/Mickey-1928" },
+  { label: "Maps", value: "firella/202404032300-oldvis-choropleth-lora-sdxl" },
+  { label: "Russian Vibe", value: "0x7o/RussianVibe-XL-v2.0" },
+  { label: "Photo", value: "dreamlike-art/dreamlike-photoreal-2.0" }
 ];
 
 export default function DropDownComponent({ passModelID }) {

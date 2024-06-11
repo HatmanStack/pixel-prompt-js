@@ -22,6 +22,12 @@ const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwi
         alteredPrompt = "photo, " + prompt;
       } else if (modelID.includes("prompthero")) {
         alteredPrompt = "mdjrny-v4 style, " + prompt;
+      } else if (modelID.includes("Voxel")){
+        alteredPrompt = "voxel style, " + prompt;
+      } else if (modelID.includes("BalloonArt")){
+        alteredPrompt = "BalloonArt, " + prompt;
+      } else if (modelID.includes("PaperCut")){
+        alteredPrompt = "PaperCut, " + prompt;
       } else {
         alteredPrompt = prompt;
       }

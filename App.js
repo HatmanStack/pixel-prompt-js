@@ -37,7 +37,7 @@ const App = () => {
   const [steps, setSteps] = useState(30);
   const [guidance, setGuidance] = useState(7);
   const [modelID, setModelID] = useState(
-    "stabilityai/stable-diffusion-xl-base-1.0"
+    "SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep"
   );
   const [prompt, setPrompt] = useState("Avocado Armchair");
   const [inferredPrompt, setInferredPrompt] = useState("");

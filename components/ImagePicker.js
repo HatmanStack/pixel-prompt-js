@@ -24,7 +24,7 @@ const MyImagePicker = ({
     });
 
     if (!result.cancelled) {
-      setImageSource(result.assets[0]);
+      setImageSource(result.assets[0].uri);
     }
   };
 
