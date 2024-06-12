@@ -50,6 +50,7 @@ const App = () => {
   const [promptLengthValue, setPromptLengthValue] = useState(false);
   const [shortPrompt, setShortPrompt] = useState("");
   const [longPrompt, setLongPrompt] = useState(null);
+  const [modelMessage, setModelMessage] = useState("");
 
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [imageSource, setImageSource] = useState(assetImage);
@@ -101,7 +102,7 @@ const App = () => {
     // Main container
     <View style={styles.titlecontainer}>
       <PromptInference prompt={prompt} textInference={textInference} setTextInference={setTextInference} setLongPrompt={setLongPrompt} setShortPrompt={setShortPrompt} setInferredPrompt={setInferredPrompt} promptLengthValue={promptLengthValue} setActivity={setActivity} setModelError={setModelError} />
-      <Inference parameters={parameters} modelID={modelID} prompt={prompt} isImagePickerVisible={isImagePickerVisible} styleSwitch={styleSwitch} settingSwitch={settingSwitch} guidance={guidance} steps={steps} setActivity={setActivity} setModelError={setModelError} setReturnedPrompt={setReturnedPrompt} setInferredImage={setInferredImage}/>
+      <Inference setModelMessage={setModelMessage} parameters={parameters} modelID={modelID} prompt={prompt} isImagePickerVisible={isImagePickerVisible} styleSwitch={styleSwitch} settingSwitch={settingSwitch} guidance={guidance} steps={steps} setActivity={setActivity} setModelError={setModelError} setReturnedPrompt={setReturnedPrompt} setInferredImage={setInferredImage}/>
       <BreathingComponent />
       <ScrollView
         scrollY={true}
@@ -140,11 +141,11 @@ const App = () => {
               </View>
               <View style={[styles.rowContainer, 
                           { padding:0 }]}>
-                <DropDownComponent passModelID={passModelIDWrapper} />
+                <DropDownComponent passModelID={passModelIDWrapper} isImagePickerVisible={isImagePickerVisible} parameters={parameters}/>
                 <View style={styles.columnContainer}>
                 <Buttons activity={activity} longPrompt={longPrompt} setTextInference={setTextInference} switchPromptFunction={switchPromptFunction} promptLengthValue={promptLengthValue} setParametersWrapper={setParametersWrapper}/>
                   {modelError ? (
-                    <Text style={styles.promptText}>Model Error!</Text>
+                    <Text style={styles.promptText}>{modelMessage}</Text>
                   ) : (
                     <></>
                   )}
@@ -183,10 +184,10 @@ const App = () => {
               setPrompt={setPrompt}
               inferredPrompt={inferredPrompt}
             />
-            <DropDownComponent passModelID={passModelIDWrapper} />
+            <DropDownComponent passModelID={passModelIDWrapper} isImagePickerVisible={isImagePickerVisible} parameters={parameters}/>
             <Buttons activity={activity} longPrompt={longPrompt} setTextInference={setTextInference} switchPromptFunction={switchPromptFunction} promptLengthValue={promptLengthValue} setParametersWrapper={setParametersWrapper}/>   
             {modelError ? (
-              <Text style={styles.promptText}>Model Error!</Text>
+              <Text style={styles.promptText}>{modelMessage}</Text>
             ) : (
               <></>
             )}

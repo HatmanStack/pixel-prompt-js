@@ -6,7 +6,7 @@ import Constants from "expo-constants";
 const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
 const inference = new HfInference(HF_TOKEN);
 
-const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwitch, settingSwitch, guidance, steps, setActivity, setModelError, setReturnedPrompt, setInferredImage }) => {
+const Inference = ({ setModelMessage, parameters, modelID, prompt, isImagePickerVisible, styleSwitch, settingSwitch, guidance, steps, setActivity, setModelError, setReturnedPrompt, setInferredImage }) => {
   useEffect(() => {
     if (parameters) {
       setActivity(true);
@@ -33,8 +33,11 @@ const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwi
       }
       console.log("Parameters:", parameters);
       let scale = {};
-      if (false) {                      //   Check for timeline on IP Adapater inference API
-        setModelID("stabilityai/stable-diffusion-xl-refiner-1.0");
+      if (isImagePickerVisible) {                      //   Check for timeline on IP Adapater inference API
+        setModelMessage('Inference API Not Documented For Image to Image Yet!');
+        setActivity(false);
+        setModelError(true);
+        /** 
         alteredPrompt = prompt;
         if (styleSwitch) {
           scale = {
@@ -46,8 +49,8 @@ const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwi
             down: { block_2: [0.0, 1.0] },
             up: { block_0: [0.0, 1.0, 0.0] },
           };
-        }
-      }
+        }*/
+      } else {
       inference
         .textToImage({
           model: modelID,
@@ -60,7 +63,7 @@ const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwi
         })
         .then((response) => {
           setReturnedPrompt(prompt);
-          if (response instanceof Blob) {
+          if (response instanceof Blob) {           // InferenceClient to check for List of Active Models
             const reader = new FileReader();
             reader.onload = () => {
               setActivity(false);
@@ -85,6 +88,7 @@ const Inference = ({ parameters, modelID, prompt, isImagePickerVisible, styleSwi
           setModelError(true);
           console.log(error);
         });
+      }
     }
   }, [parameters]);
 
