@@ -22,8 +22,9 @@ const PromptInference = ({ prompt, textInference, setTextInference, setLongPromp
       }
       console.log("Altered Prompt:", alteredPrompt);
       alteredPrompt = `I'm giving you a seed string for a stable diffusion model. Return two versions \
-        in fewer than 500 tokens. A long version and a shortened version.  Make both descriptive and creative. \
-        Here is the seed string. : ${alteredPrompt}`;
+        A long version and a shortened version.  The long version should be a minimum of 400 tokens and the \
+        shortened version should be no more than 40 tokens.  Make both descriptive and creative. \
+        Here is the seed string. : ${alteredPrompt}`;;
       inference
         .chatCompletion({
           model: "mistralai/Mistral-7B-Instruct-v0.3",

@@ -6,9 +6,9 @@ import Constants from "expo-constants";
 const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
 const inference = new HfInference(HF_TOKEN);
 
-const Inference = ({ setModelMessage, parameters, modelID, prompt, isImagePickerVisible, styleSwitch, settingSwitch, guidance, steps, setActivity, setModelError, setReturnedPrompt, setInferredImage }) => {
+const Inference = ({ setInferrencebutton, inferrenceButton, setModelMessage, parameters, modelID, prompt, isImagePickerVisible, styleSwitch, settingSwitch, guidance, steps, setActivity, setModelError, setReturnedPrompt, setInferredImage }) => {
   useEffect(() => {
-    if (parameters) {
+    if (inferrenceButton) {
       setActivity(true);
       setModelError(false);
       let alteredPrompt = "";
@@ -34,9 +34,10 @@ const Inference = ({ setModelMessage, parameters, modelID, prompt, isImagePicker
       console.log("Parameters:", parameters);
       let scale = {};
       if (isImagePickerVisible) {                      //   Check for timeline on IP Adapater inference API
-        setModelMessage('Inference API Not Documented For Image to Image Yet!');
+        setModelMessage('Inference API img2img NotAvailable!');
         setActivity(false);
         setModelError(true);
+        setInferrencebutton(false);
         /** 
         alteredPrompt = prompt;
         if (styleSwitch) {
@@ -67,6 +68,7 @@ const Inference = ({ setModelMessage, parameters, modelID, prompt, isImagePicker
             const reader = new FileReader();
             reader.onload = () => {
               setActivity(false);
+              setInferrencebutton(false);
               if (typeof reader.result === "string") {
                 console.log("Blob read successfully")
                 setInferredImage(reader.result);
@@ -84,13 +86,14 @@ const Inference = ({ setModelMessage, parameters, modelID, prompt, isImagePicker
           }
         })
         .catch(function (error) {
+          setInferrencebutton(false);
           setActivity(false);
           setModelError(true);
           console.log(error);
         });
       }
     }
-  }, [parameters]);
+  }, [inferrenceButton]);
 
   return null;
 };

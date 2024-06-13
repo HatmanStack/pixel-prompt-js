@@ -27,7 +27,7 @@ export default function DropDownComponent({ passModelID, isImagePickerVisible, p
           label: "Stable Diffusion",
           value: "stabilityai/stable-diffusion-xl-base-1.0",
         },
-        { label: "Voxel", value: "Fictiverse/Voxel_XL_Lora" },
+        { label: "Voxel", value: "Fictiverse/Stable_Diffusion_VoxelArt_Model" },
         { label: "Paper Cut Out", value: "Fictiverse/Stable_Diffusion_PaperCut_Model" },
         { label: "Van-Gogh", value: "dallinmackay/Van-Gogh-diffusion" },
         { label: "Robots", value: "nousr/robo-diffusion" },
@@ -37,12 +37,9 @@ export default function DropDownComponent({ passModelID, isImagePickerVisible, p
         { label: "Open Journey", value: "prompthero/openjourney" },
         { label: "Flintstones", value: "juliajoanna/sdxl-flintstones_finetuning_1" },
         { label: "SegMind", value: "segmind/Segmind-Vega" },
-        { label: "Mickey 1928", value: "Pclanglais/Mickey-1928" },
-        { label: "Maps", value: "firella/202404032300-oldvis-choropleth-lora-sdxl" },
         { label: "Absolute Reality", value: "digiplay/AbsoluteReality_v1.8.1" },
-        { label: "Russian Vibe", value: "0x7o/RussianVibe-XL-v2.0" },
         { label: "Photo", value: "dreamlike-art/dreamlike-photoreal-2.0" },
-        { label: "Acorn", value: "digiplay/Acorn_Photo_v1" }
+        { label: "Acorn", value: "digiplay/Acorn_Photo_v1" },
       ];
       if(parameters) {
       setPlaceholderModelID("Step Aware");
