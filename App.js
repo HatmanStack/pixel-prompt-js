@@ -37,7 +37,7 @@ const App = () => {
   const [steps, setSteps] = useState(30);
   const [guidance, setGuidance] = useState(7);
   const [modelID, setModelID] = useState(
-    "SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep"
+    "stabilityai/stable-diffusion-xl-base-1.0"
   );
   const [prompt, setPrompt] = useState("Avocado Armchair");
   const [inferredPrompt, setInferredPrompt] = useState("");
@@ -53,11 +53,12 @@ const App = () => {
   const [modelMessage, setModelMessage] = useState("");
   const [inferrenceButton, setInferrenceButton] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [imageSource, setImageSource] = useState(assetImage);
+  const [imageSource, setImageSource] = useState([assetImage]);
   const [settingSwitch, setSettingSwitch] = useState(false);
   const [styleSwitch, setStyleSwitch] = useState(false);
   const [flanPrompt, setFlanPrompt] = useState(null);
   const [comboButtonPressed, setComboButtonPressed] = useState(false);
+  const circleImage = require("./assets/circle.png");
 
   const passModelIDWrapper = (x) => {
     setModelError(false);
@@ -160,7 +161,7 @@ const App = () => {
                 ]}
               >
                 <Image
-                  source={require("./assets/circle.png")}
+                  source={circleImage}
                   style={styles.changeButton}
                 />
               </Pressable>
@@ -176,13 +177,13 @@ const App = () => {
               <View style={[styles.rowContainer, { padding: 0 }]}>
                 <DropDownComponent
                   passModelID={passModelIDWrapper}
-                  isImagePickerVisible={isImagePickerVisible}
-                  parameters={parameters}
+                  
                 />
                 <View style={styles.columnContainer}>
                   <Buttons
                     comboButtonPressed={comboButtonPressed}
                     setComboButtonPressed={setComboButtonPressed}
+                    switchToFlan={switchToFlan}
                     activity={activity}
                     longPrompt={longPrompt}
                     setTextInference={setTextInference}
@@ -242,12 +243,12 @@ const App = () => {
             />
             <DropDownComponent
               passModelID={passModelIDWrapper}
-              isImagePickerVisible={isImagePickerVisible}
-              parameters={parameters}
+              
             />
             <Buttons
               comboButtonPressed={comboButtonPressed}
               setComboButtonPressed={setComboButtonPressed}
+              switchToFlan={switchToFlan}
               activity={activity}
               longPrompt={longPrompt}
               setTextInference={setTextInference}
@@ -282,7 +283,7 @@ const App = () => {
                   style={styles.swapButtonColumn}
                 >
                   <Image
-                    source={require("./assets/circle.png")}
+                    source={circleImage}
                     style={styles.changeButton}
                   />
                 </Pressable>

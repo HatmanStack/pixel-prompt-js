@@ -1,5 +1,5 @@
-import React from "react";
-import { Pressable, Image, View, StyleSheet, Text, Switch } from "react-native";
+import React, { useState } from "react";
+import { Pressable, Image, View, StyleSheet, Text, Switch, FlatList } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 const MyImagePicker = ({
@@ -10,12 +10,15 @@ const MyImagePicker = ({
   settingSwitch,
   setSettingSwitch,
 }) => {
-  const selectImage = async () => {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+
+  const selectImage = async (index) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need media library permissions to select an image.");
       return;
     }
+    console.log("Selecting image");
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -24,7 +27,11 @@ const MyImagePicker = ({
     });
 
     if (!result.cancelled) {
-      setImageSource(result.assets[0].uri);
+      setImageSource(prevImageSource => {
+        const newImageSource = [...prevImageSource];
+        newImageSource[index] = result.assets[0].uri;
+        return newImageSource;
+      });
     }
   };
 
@@ -36,9 +43,18 @@ const MyImagePicker = ({
     setSettingSwitch(!settingSwitch);
   };
 
+  const deleteFromImageArray = (index) => {
+    setImageSource(prevImageSource => {
+        if (prevImageSource.length > 1) {
+            return prevImageSource.filter((_, i) => i !== index);
+        }
+        return prevImageSource;
+    });
+};
+
   return (
-    <View style={styles.container}>
-      <View style={styles.rowContainer}>
+    <>    
+      <View style={styles.switchesRowContainer}>
         <View style={styles.columnContainer}>
           <Text
             style={[
@@ -75,15 +91,58 @@ const MyImagePicker = ({
             value={settingSwitch}
           />
         </View>
+      </View>    
+    <FlatList
+        data={imageSource}
+        numColumns={3}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item: source, index }) => (
+          <View style={[styles.imageColumnContainer, {height: selectedImageIndex === index ? 400 : 200}]}>
+            <View style={[styles.columnContainer,]}>
+          <Pressable
+              onPress={() => {
+                  if(selectedImageIndex === index) {
+                      setSelectedImageIndex(null);
+                      return;
+                  }
+                  setSelectedImageIndex(index);
+                  
+              }}
+              style={{flex: 1, alignItems: "center", justifyContent: "center"}} 
+          >
+              <Image
+                  source={
+                      typeof source === "number" ? source : { uri: source }
+                  }
+                  style={[
+                      styles.image,
+                      {width: selectedImageIndex === index ? 400 : 150, height: selectedImageIndex === index ? 400 : 150,
+                        margin: 10,
+                        
+                      }
+                  ]}
+              />
+          </Pressable>
+          </View>
+          <Pressable
+              onPress={() => {
+                  deleteFromImageArray(index);
+              }}
+              style={{position: "absolute", top: 0, right: 0}} 
+          >
+           {({ pressed }) => (
+              <Image
+                  source={pressed ? require("../assets/delete_colored.png") : require("../assets/delete.png")}
+                  style={[ styles.changeButton]}
+              />)}
+          </Pressable>       
+          <Pressable style={[styles.selectButton]} onPress={() => selectImage(index)}>
+              <Text style={styles.promptText}>Select</Text>
+          </Pressable>
       </View>
-
-      {imageSource &&
-        <Image source={typeof imageSource === 'number' ? imageSource : { uri: imageSource }} style={styles.image} />
-        }
-      <Pressable style={styles.selectButton} onPress={selectImage}>
-        <Text style={styles.promptText}>Select</Text>
-      </Pressable>
-    </View>
+        )}
+      />
+    </>
   );
 };
 
@@ -94,22 +153,23 @@ const colors = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   image: {
-    width: 200,
-    height: 200,
     marginTop: 20,
   },
-  rowContainer: {
+  switchesRowContainer: {
     backgroundColor: colors.backgroundColor,
     alignItems: "center",
-    flex: 1,
-    width: "100%",
+    justifyContent: "center",
+    width: 300,
+    height: 50,
+    marginBottom: 20,
     flexDirection: "row",
+    overflow: "auto",
+  },
+  imageColumnContainer: {
+    height: 200,
+    alignItems: "center",
+    flexDirection: "column",
     overflow: "auto",
   },
   columnContainer: {
@@ -118,7 +178,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   selectButton: {
-    margin: 20,
+    margin: 0,
     borderRadius: 4,
     paddingHorizontal: 32,
     elevation: 3,
@@ -141,6 +201,18 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     lineHeight: 30,
     fontFamily: "Sigmar",
+  },
+  
+  changeButton: {
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center", // change as needed
+    elevation: 3, // for Android shadow
+    shadowColor: "#000", // for iOS shadow
+    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
+    shadowOpacity: 0.25, // for iOS shadow
+    shadowRadius: 3.84, // for iOS shadow
   },
 });
 

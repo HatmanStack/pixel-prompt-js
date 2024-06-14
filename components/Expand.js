@@ -1,8 +1,11 @@
 import React from 'react';
 import {StyleSheet, Pressable, Image } from 'react-native'; 
-import { Dimensions } from 'react-native';
 
 const Expand = ({isImagePickerVisible, setImagePickerVisible, window}) => {
+
+  const rightImage = require("../assets/right.png");
+  const downImage = require("../assets/down.png");
+
   return (
     
       <Pressable
@@ -18,12 +21,12 @@ const Expand = ({isImagePickerVisible, setImagePickerVisible, window}) => {
       >
         {isImagePickerVisible ? (
           <Image
-            source={require("../assets/right.png")}
+            source={rightImage}
             style={styles.expandImage}
           />
         ) : (
           <Image
-            source={require("../assets/down.png")}
+            source={downImage}
             style={styles.expandImage}
           />
         )}

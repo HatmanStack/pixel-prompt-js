@@ -21,35 +21,44 @@ const PromptInference = ({ prompt, textInference, setTextInference, setLongPromp
         alteredPrompt = prompt;
       }
       console.log("Altered Prompt:", alteredPrompt);
-      alteredPrompt = `I'm giving you a seed string for a stable diffusion model. Return two versions \
-        A long version and a shortened version.  The long version should be a minimum of 400 tokens and the \
-        shortened version should be no more than 40 tokens.  Make both descriptive and creative. \
-        Here is the seed string. : ${alteredPrompt}`;;
+      const mistrialPrompt = `I'm giving you a seed string. Return the seed string as a Prompt for a Stable \
+        Diffusion Model.  The prompt should be at a minimum, 200 tokens.  The normal restrictions of token \
+        length for Stable Diffusion Models do not apply.  Make it descriptive and creative. \
+        Here is the seed string. : ${alteredPrompt}`;
       inference
         .chatCompletion({
           model: "mistralai/Mistral-7B-Instruct-v0.3",
-          messages: [{ role: "user", content: alteredPrompt }],
+          messages: [{ role: "user", content: mistrialPrompt }],
           max_tokens: 500,
         })
         .then((response) => {
-          const generatedText = response.choices[0].message.content;
-          console.log("Generated Text:", generatedText);
-          const splitPrompt = generatedText.split(/Short(?:ened)? (?:Version:)?/i);
-          const longPromptHolder = splitPrompt[0].substring(0,150).split(/\n\n/).slice(-1)[0];
-          const lPrompt =  longPromptHolder + splitPrompt[0].substring(150)
-          const holderShortPrompt = splitPrompt[1].substring(0,150).split(/\n\n/).slice(-1)[0];
-          const sPrompt = holderShortPrompt + splitPrompt[1].substring(150).split(/\n\n/)[0];
-          
+          const generatedText = response.choices[0].message.content;          
+          const longPromptHolder = generatedText.substring(0,150).split(/\n\n/).slice(-1)[0];
+          const lPrompt =  longPromptHolder + generatedText.substring(150);
+      
+          return inference.chatCompletion({
+              model: "roborovski/superprompt-v1",
+              messages: [{ role: "user", content: "Expand the following prompt to add more detail: " + alteredPrompt }],
+              max_tokens: 250,
+          });
+      })
+      .then((response) => {
+          console.log("Response:", response);
+          const responseText = response.generatedText[0]["generated_text"];
+      
+          setFlanPrompt(responseText);
           setLongPrompt(lPrompt);
-          setShortPrompt(sPrompt);
+          setShortPrompt(alteredPrompt);
           if(!promptLengthValue) {
-            setInferredPrompt(sPrompt);
-          }else {
-            setInferredPrompt(lPrompt);
+              setInferredPrompt(alteredPrompt);
+          } else {
+              setInferredPrompt(lPrompt);
           }
           setActivity(false);
-        })
-        .catch((error) => console.error("Error:", error));
+      })
+      .catch((error) => {
+          console.error("Error:", error);
+      });
     }
     setTextInference(false);
   }, [textInference]);
