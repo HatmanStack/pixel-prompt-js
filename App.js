@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  ActivityIndicator,
   StyleSheet,
   View,
   ScrollView,
@@ -8,7 +7,6 @@ import {
   Pressable,
   useWindowDimensions,
   Image,
-  Switch,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
