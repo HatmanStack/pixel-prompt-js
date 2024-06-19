@@ -16,6 +16,7 @@
     "@huggingface/inference": "^2.7.0",
     "@react-native-community/slider": "4.4.2",
     "expo": "^50.0.7",
+    "expo-av": "^14.0.5",
     "expo-font": "~11.10.3",
     "expo-image-picker": "~14.7.1",
     "expo-status-bar": "~1.11.1",
@@ -25,6 +26,7 @@
     "react-native": "0.73.6",
     "react-native-dotenv": "^3.4.11",
     "react-native-element-dropdown": "^2.10.0",
+    "react-native-nested-scroll-view": "^9.0.0",
     "react-native-web": "~0.19.6",
     "react-native-web-image-picker": "^0.0.0-alpha.1"
   },

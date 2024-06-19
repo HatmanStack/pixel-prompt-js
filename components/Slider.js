@@ -3,8 +3,8 @@ import { StyleSheet, View, Text } from "react-native";
 import Slider from "@react-native-community/slider";
 
 export default function SliderComponent({ setSteps, setGuidance }) {
-  const [samplingValue, setSamplingValue] = React.useState(30);
-  const [guidanceValue, setGuidanceValue] = React.useState(7);
+  const [samplingValue, setSamplingValue] = React.useState(28);
+  const [guidanceValue, setGuidanceValue] = React.useState(5);
 
   // Handle sampling steps change
   const handleStepChange = (x) => {
@@ -57,7 +57,7 @@ const colors = {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingTop: 20,
+    paddingTop: 50,
   },
   slider: {
     width: 350,

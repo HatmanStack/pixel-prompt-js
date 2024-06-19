@@ -1,64 +1,79 @@
 // Prompt.js
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import Constants from "expo-constants";
-import { HfInference } from "@huggingface/inference";
-import seeds from "../assets/seeds.json"; 
+import { HfInference, textGeneration } from "@huggingface/inference";
+import seeds from "../assets/seeds.json";
 
 const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
 const inference = new HfInference(HF_TOKEN);
+const assholes = new textGeneration(HF_TOKEN);
 
-const PromptInference = ({ prompt, textInference, setTextInference, setLongPrompt, setShortPrompt, setInferredPrompt, promptLengthValue, setActivity, setModelError }) => {
+const PromptInference = ({
+  longPrompt,
+  setFlanPrompt,
+  prompt,
+  textInference,
+  setTextInference,
+  setLongPrompt,
+  setShortPrompt,
+  setInferredPrompt,
+  promptLengthValue,
+  setActivity,
+  setModelError,
+}) => {
+  
   useEffect(() => {
     if (textInference) {
       setActivity(true);
       setModelError(false);
       let alteredPrompt = "";
-
       if (prompt === "Avocado Armchair" || prompt === "") {
         const randomIndex = Math.floor(Math.random() * seeds.seeds.length);
         alteredPrompt = seeds.seeds[randomIndex];
       } else {
         alteredPrompt = prompt;
       }
-      console.log("Altered Prompt:", alteredPrompt);
-      const mistrialPrompt = `I'm giving you a seed string. Return the seed string as a Prompt for a Stable \
-        Diffusion Model.  The prompt should be at a minimum, 200 tokens.  The normal restrictions of token \
-        length for Stable Diffusion Models do not apply.  Make it descriptive and creative. \
-        Here is the seed string. : ${alteredPrompt}`;
-      inference
-        .chatCompletion({
-          model: "mistralai/Mistral-7B-Instruct-v0.3",
-          messages: [{ role: "user", content: mistrialPrompt }],
+        textGeneration({
+          accessToken: HF_TOKEN,
+          model: "google/gemma-1.1-7b-it",
+          inputs: 
+             `You create prompts for the Stable Diffusion series of machine learning models.  \
+              Your prompt should be confied to {max_tokens} tokens maximum.  Here is your seed string: ${alteredPrompt}`, 
           max_tokens: 500,
+        }).then((response) => {
+          return inference.chatCompletion({
+            model: "mistralai/Mistral-7B-Instruct-v0.3",
+            messages: [{ role: "user", content: response["generated_text"] }],
+            max_tokens: 500,
+        })})
+        .then((response) => {
+          const generatedText = response.choices[0].message.content;
+          const lPH = generatedText
+            .substring(0, 150)
+            .split(/\n\n/)
+            .slice(-1)[0];
+          setLongPrompt(lPH + generatedText.substring(150));
+          return inference.request({
+            model: "roborovski/superprompt-v1",
+            inputs: "Expand the following prompt to add more detail: " +
+            alteredPrompt,        
+            max_tokens: 300,
+          });
         })
         .then((response) => {
-          const generatedText = response.choices[0].message.content;          
-          const longPromptHolder = generatedText.substring(0,150).split(/\n\n/).slice(-1)[0];
-          const lPrompt =  longPromptHolder + generatedText.substring(150);
-      
-          return inference.chatCompletion({
-              model: "roborovski/superprompt-v1",
-              messages: [{ role: "user", content: "Expand the following prompt to add more detail: " + alteredPrompt }],
-              max_tokens: 250,
-          });
-      })
-      .then((response) => {
           console.log("Response:", response);
-          const responseText = response.generatedText[0]["generated_text"];
-      
-          setFlanPrompt(responseText);
-          setLongPrompt(lPrompt);
+          setFlanPrompt(response[0]["generated_text"]);
           setShortPrompt(alteredPrompt);
-          if(!promptLengthValue) {
-              setInferredPrompt(alteredPrompt);
+          if (!promptLengthValue) {
+            setInferredPrompt(alteredPrompt);
           } else {
-              setInferredPrompt(lPrompt);
+            setInferredPrompt(longPrompt);
           }
           setActivity(false);
-      })
-      .catch((error) => {
+        })
+        .catch((error) => {
           console.error("Error:", error);
-      });
+        });
     }
     setTextInference(false);
   }, [textInference]);

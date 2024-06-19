@@ -7,8 +7,9 @@ export default function DropDownComponent({
   
 }) {
     const [placeholderModelID, setPlaceholderModelID] = useState("Model ID");
-  
       const data = [
+        
+        
         {
           label: "Stable Diffusion XL",
           value: "stabilityai/stable-diffusion-xl-base-1.0",
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   dropdown: {
     margin: 16,
     height: 50,
-    width: 300,
+    width: 340,
     borderBottomColor: colors.borderBottomColor,
     borderBottomWidth: 3,
   },

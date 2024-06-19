@@ -62,8 +62,9 @@ All the models are opensource and available on HuggingFace.
        
 #### Text to Image
 
-- **SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep**
+- **stabilityai/stable-diffusion-3-medium**
 - **stabilityai/stable-diffusion-xl-base-1.0**
+- **SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep**
 - **Fictiverse/Fictiverse/Stable_Diffusion_VoxelArt_Model**
 - **Fictiverse/Stable_Diffusion_PaperCut_Model**
 - **dallinmackay/Van-Gogh-diffusion**
@@ -82,6 +83,7 @@ All the models are opensource and available on HuggingFace.
 
 - **mistralai/Mistral-7B-Instruct-v0.3**
 - **roborovski/superprompt-v1**
+- **google/gemma-1.1-7b-it**
 
 ## Functionality
 

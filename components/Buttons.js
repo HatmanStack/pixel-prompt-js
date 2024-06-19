@@ -1,5 +1,5 @@
 // Buttons.js
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -10,9 +10,11 @@ import {
   Image,
 } from "react-native";
 
+const coloredJoin = require("../assets/join_colored.png");
+const joinButton = require("../assets/join.png");
+
 const Buttons = ({
-  comboButtonPressed,
-  setComboButtonPressed,
+  setPlaySound,
   switchToFlan,
   setInferrenceButton,
   activity,
@@ -23,6 +25,13 @@ const Buttons = ({
   setParametersWrapper,
 }) => {
   
+  const [comboButtonPressed, setComboButtonPressed] = useState(false);
+
+  const setThePromptValue = () => {
+    setComboButtonPressed(false);
+    switchPromptFunction();
+  }
+
   return (
     <>
       {activity ? (
@@ -39,6 +48,7 @@ const Buttons = ({
                 <Pressable
                   onPress={() => {
                     setTextInference(true);
+                    setPlaySound("click");
                   }}
                   style={({ pressed }) => [
                     {
@@ -82,17 +92,18 @@ const Buttons = ({
                     thumbColor="#B58392"
                     activeThumbColor="#6750A4"
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={switchPromptFunction}
+                    onValueChange={setThePromptValue}
                     value={promptLengthValue}
                   />
                   <Pressable
                     onPress={() => {
                       switchToFlan();
                       setComboButtonPressed(true);
+                      setPlaySound("click");
                     }}
                   >
                     <Image
-                    source={comboButtonPressed ? require("../assets/join_colored.png") : require("../assets/join.png")}
+                    source={comboButtonPressed ?  coloredJoin : joinButton}
                     style={[{marginRight: 30}, styles.changeButton]}
                   />
                     </Pressable>
@@ -104,6 +115,7 @@ const Buttons = ({
             <Pressable
               onPress={() => {
                 setTextInference(true);
+                setPlaySound("click");
               }}
               style={({ pressed }) => [
                 { backgroundColor: pressed ? "#958DA5" : "#9DA58D" },
@@ -121,6 +133,7 @@ const Buttons = ({
             onPress={() => {
               setInferrenceButton(true);
               setParametersWrapper();
+              setPlaySound("click");
             }}
             style={({ pressed }) => [
               {
