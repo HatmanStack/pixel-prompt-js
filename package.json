@@ -26,8 +26,7 @@
     "react-native": "0.73.6",
     "react-native-dotenv": "^3.4.11",
     "react-native-element-dropdown": "^2.10.0",
-    "react-native-web": "~0.19.6",
-    "react-native-web-image-picker": "^0.0.0-alpha.1"
+    "react-native-web": "~0.19.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

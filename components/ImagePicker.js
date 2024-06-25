@@ -214,7 +214,7 @@ const MyImagePicker = ({
                   />
                 </Pressable>
               </View>
-              {index !== imageSource.length - 1 && (
+              {index !== imageSource.length - 1 && (selectedImageIndex === null || index !== selectedImageIndex + 1) && (
                 <Pressable
                   onPress={() => {
                     deleteFromImageArray(index);
@@ -247,7 +247,7 @@ const MyImagePicker = ({
                     {promptList[index]}
                   </Text>
                 )}
-              {index === imageSource.length - 1 && !selectedImageIndex && (
+              { index !== imageSource.length - 1 && !selectedImageIndex &&(
                 <Pressable
                   style={[styles.selectButton]}
                   onPress={() => {
