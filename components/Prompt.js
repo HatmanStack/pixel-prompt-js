@@ -6,7 +6,7 @@ import seeds from "../assets/seeds.json";
 
 const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
 const inference = new HfInference(HF_TOKEN);
-const assholes = new textGeneration(HF_TOKEN);
+
 
 const PromptInference = ({
   longPrompt,

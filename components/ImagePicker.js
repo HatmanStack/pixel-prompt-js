@@ -15,6 +15,7 @@ const coloredDelete = require("../assets/delete_colored.png");
 const deleteButton = require("../assets/delete.png");
 
 const MyImagePicker = ({
+  columnCount,
   selectedImageIndex,
   setSelectedImageIndex,
   initialReturnedPrompt,
@@ -107,6 +108,13 @@ const MyImagePicker = ({
     });
   };
 
+  function isStartOrEndOfRow(index) {
+    const isLastInRow = (selectedImageIndex + 1) % columnCount === 0 || selectedImageIndex === imageSource.length - 1;
+    const isFirstInRow = selectedImageIndex % columnCount === 0;
+    
+    return selectedImageIndex === index + (isFirstInRow ? -1 : 1) || selectedImageIndex === index + (isFirstInRow ? -2 : isLastInRow ? 2 : -1);
+  }
+
   return (
     <>
       <View style={styles.switchesRowContainer}>
@@ -150,20 +158,24 @@ const MyImagePicker = ({
       <View style={styles.flatListContainer}>
         <FlatList
           data={imageSource}
-          numColumns={window.width < 1000 ? 2 : 3}
+          key={columnCount}
+          numColumns={columnCount}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item: source, index }) => (
             <View
               style={[
                 styles.imageColumnContainer,
                 {
-                  width: selectedImageIndex == index + 1 ? 0 : selectedImageIndex === index ? 330 : 160,
+                  width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : index === imageSource.length - 1 ? 160 : 105,
                   height:
                     window.width < 1000 && selectedImageIndex == index
                       ? containerHeight
                       : selectedImageIndex === index
                         ? 440
-                        : 160,
+                        : index === imageSource.length - 1 ? 160 : 105,
+                        margin: 0,
+                  marginTop: selectedImageIndex === index ? 20 : 0,
+                  overflow: "visible"
                 },
               ]}
             >
@@ -182,8 +194,8 @@ const MyImagePicker = ({
                     {
                       alignItems: "flex-start",
                       justifyContent: "flex-start",
-                      width: selectedImageIndex == index + 1 ? 0 : selectedImageIndex === index ? 320 : 100,
-                      height: selectedImageIndex == index + 1 ? 0 : selectedImageIndex === index ? 400 : 110,
+                      width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
+                      height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
                       borderRadius: selectedImageIndex === index ? 30 : 0,
                     },
                   ]}
@@ -194,8 +206,8 @@ const MyImagePicker = ({
                     }
                     style={[
                       {
-                        width: selectedImageIndex == index + 1 ? 0 : selectedImageIndex === index ? 320 : 100,
-                        height: selectedImageIndex == index + 1 ? 0 : selectedImageIndex === index ? 400 : 110,
+                        width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
+                        height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
                         borderRadius: selectedImageIndex === index ? 30 : 0,
                       },
                     ]}
@@ -210,7 +222,7 @@ const MyImagePicker = ({
                   style={{
                     position: "absolute",
                     top: 0,
-                    right: selectedImageIndex === index ? 0 : 15,
+                    right: 0,
                   }}
                 >
                   {({ pressed }) => (
@@ -235,7 +247,7 @@ const MyImagePicker = ({
                     {promptList[index]}
                   </Text>
                 )}
-              {index === imageSource.length - 1 && (
+              {index === imageSource.length - 1 && !selectedImageIndex && (
                 <Pressable
                   style={[styles.selectButton]}
                   onPress={() => {
@@ -276,7 +288,6 @@ const styles = StyleSheet.create({
     overflow: "auto",
   },
   imageColumnContainer: {
-    marginTop: 10,
     alignItems: "center",
     flexDirection: "column",
     overflow: "auto",
