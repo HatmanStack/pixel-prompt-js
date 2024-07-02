@@ -38,12 +38,12 @@ const PromptInference = ({
           model: "google/gemma-1.1-7b-it",
           inputs: 
              `You create prompts for the Stable Diffusion series of machine learning models.  \
-              Your prompt should be confied to {max_tokens} tokens maximum.  Here is your seed string: ${alteredPrompt}`, 
+              Your prompt should be confied to 200 tokens maximum.  Here is your seed string: ${alteredPrompt}`, 
           max_tokens: 500,
         }).then((response) => {
           return inference.chatCompletion({
             model: "mistralai/Mistral-7B-Instruct-v0.3",
-            messages: [{ role: "user", content: response["generated_text"] }],
+            messages: [{ role: "user", content: `Take this prompt for a stable diffusion model and try to refine down to a maximum of 150 tokens ${response["generated_text"]}` }],
             max_tokens: 500,
         })})
         .then((response) => {
@@ -54,15 +54,14 @@ const PromptInference = ({
             .slice(-1)[0];
           setLongPrompt(lPH + generatedText.substring(150));
           return inference.request({
-            model: "roborovski/superprompt-v1",
-            inputs: "Expand the following prompt to add more detail: " +
-            alteredPrompt,        
-            max_tokens: 300,
+            model: "Gustavosta/MagicPrompt-Stable-Diffusion",
+            inputs: alteredPrompt,        
+            max_tokens: 77,
           });
         })
-        .then((response) => {
-          console.log("Response:", response);
-          setFlanPrompt(response[0]["generated_text"]);
+        .then((superprompt) => {
+          console.log("Response:", superprompt[0]["generated_text"]);
+          setFlanPrompt(superprompt[0]["generated_text"]);
           setShortPrompt(alteredPrompt);
           if (!promptLengthValue) {
             setInferredPrompt(alteredPrompt);

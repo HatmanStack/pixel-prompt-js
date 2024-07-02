@@ -113,7 +113,8 @@ const Inference = ({
                 setActivity(false);
                 setInferrenceButton(false);
                 if (typeof reader.result === "string") {
-                  console.log("Blob read successfully");
+                  console.log(reader.result.substring(0, 100));
+
                   setInferredImage(reader.result);
                 } else {
                   console.error(

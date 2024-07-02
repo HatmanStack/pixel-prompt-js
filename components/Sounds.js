@@ -7,61 +7,41 @@ const switchSound = require('../assets/switch.wav');
 const expand = require('../assets/expand.wav');
 
 const SoundPlayer = ({ makeSound}) => {
-  const soundRef = useRef();
+  const soundRef = useRef(null);
 
   useEffect(() => {
+    Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+      shouldDuckAndroid: true,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+    });
     return () => {
       // Unload the sound when the component unmounts
       if (soundRef.current) {
-        soundRef.current.unloadAsync();
+        soundRef.current?.unloadAsync();
       }
     };
   }, []);
 
   useEffect(() => {
+    const playSound = async () => {
+      const { sound } = await Audio.Sound.createAsync(
+        // Dynamically select the sound file based on makeSound
+        { uri: makeSound[0] === 'click' ? click : makeSound[0] === 'swoosh' ? swoosh : makeSound[0] === 'switch' ? switchSound : expand },
+        { shouldPlay: true }
+      );
+      soundRef.current = sound;
+      await sound.playAsync();
+    };
+
     if (makeSound) {
-      let soundFile;
-      switch (makeSound[0]) {
-        case 'click':
-          soundFile = click;
-          break;
-        case 'swoosh':
-          soundFile = swoosh;
-          break;
-        case 'switch':
-          soundFile = switchSound;
-          break;
-        case 'expand':
-          soundFile = expand;
-          break;
-        default:
-          return;
-      }
-
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().then(() => {
-        }).catch((error) => {
-          console.log('Failed to unload the sound', error);
-        });
-      }
-      
-      const loadAndPlaySound = async () => {
-        try {
-          const { sound } = await Audio.Sound.createAsync(soundFile);
-          soundRef.current = sound;
-          await soundRef.current.playAsync();
-        } catch (error) {
-          console.log('Failed to load and play the sound', error);
-        }
-      };
-
-      loadAndPlaySound().catch((error) => {
-        console.log('Failed to load and play the sound', error);
-      });
+      playSound();
     }
   }, [makeSound]);
 
-  
+  return null;
 };
 
 export default SoundPlayer;

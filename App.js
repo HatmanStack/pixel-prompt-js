@@ -12,6 +12,8 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import { registerRootComponent } from "expo";
+import * as FileSystem from 'expo-file-system';
+import base64 from 'react-native-base64';
 import SliderComponent from "./components/Slider";
 import PromptInputComponent from "./components/PromptInput";
 import BreathingComponent from "./components/Breathing";
@@ -52,13 +54,15 @@ const App = () => {
   const [inferrenceButton, setInferrenceButton] = useState(null);
   const [flanPrompt, setFlanPrompt] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [imageSource, setImageSource] = useState([addImage]);
+  const [imageSource, setImageSource] = useState([]);
   const [settingSwitch, setSettingSwitch] = useState(false);
   const [styleSwitch, setStyleSwitch] = useState(false);
   const [soundIncrement, setSoundIncrement] = useState(null);
   const [makeSound, setMakeSound] = useState([null, 0]);
   const [promptList, setPromptList] = useState([]);
   const [swapImage, setSwapImage] = useState(false);
+  const [URIList, setURIList] = useState([]);
+  const [indexToDelete, setIndexToDelete] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [columnCount, setColumnCount] = useState(3);
 
@@ -75,6 +79,29 @@ const App = () => {
   };
 
   useEffect(() => {
+    async function deleteFile(uriToDelete) {
+      if (uriToDelete) {
+        try {
+          await FileSystem.deleteAsync(uriToDelete);
+          console.log("File deleted successfully");
+        } catch (error) {
+          console.error("Error deleting file:", error);
+        }
+      }
+    }
+  
+    if (indexToDelete) {
+      deleteFile(URIList[indexToDelete]);
+      setURIList((prevURIList) => {
+        if(prevURIList.length > 0){
+        return prevURIList.filter((_, i) => i !== indexToDelete);
+        }
+     });
+    }
+  }, [indexToDelete]);
+
+
+  useEffect(() => {
     if (swapImage) {
       if (inferredImage !== addImage) {
         setPromptList((prevPromptList) => [
@@ -85,6 +112,8 @@ const App = () => {
           inferredImage,
           ...prevImageSource,
         ]);
+        
+        saveBase64ToFile(inferredImage, initialReturnedPrompt);
         setInferredImage(addImage);
         setInitialReturnedPrompt("");
         setReturnedPrompt("");
@@ -93,7 +122,86 @@ const App = () => {
     }
   }),
     [swapImage];
+    
 
+    const saveBase64ToFile = async (base64Data, fileName) => {
+      const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
+      const saveFileName = timestamp + 'pixel'
+      const filePath = `${FileSystem.documentDirectory}${saveFileName}`;
+      setURIList((prevURIList) => [filePath, ...prevURIList]);
+      try {
+        // Decode base64 string and write the data to a file
+        const base64Body = base64Data.split(',')[1] || base64Data;
+        const utf8StringBase64 = base64.encode(fileName)
+        
+        const fileContentToWrite = utf8StringBase64 + '|||' + base64Body;
+        await FileSystem.writeAsStringAsync(filePath, fileContentToWrite);
+        console.log('File saved to:', filePath);
+      } catch (error) {
+        console.error('Error saving file:', error);
+      }
+    };
+    
+    useEffect(() => {
+      const readFiles = async () => {
+        
+        const directoryPath = FileSystem.documentDirectory;
+        try {
+          const directoryContents = await FileSystem.readDirectoryAsync(directoryPath); // Read directory 
+          console.log(`Directory: ${directoryContents}`)
+          if (directoryContents.length === 0) return;
+          const fileInfoPromises = directoryContents.map(async fileName => {
+            const filePath = `${directoryPath}${fileName}`;
+            if (!filePath.includes('pixel')) {
+              console.log(`Skipping file as it does not contain 'pixel': ${filePath}`);
+              return null; // Skip this file
+            }
+            try {
+              console.log(`FilePathImages: ${filePath}`);
+              return await FileSystem.getInfoAsync(filePath); // Get info for each file
+            } catch (error) {
+              console.error(`Error accessing file ${filePath}: ${error}`);
+              return null; 
+            }
+          });
+          const filesInfo = await Promise.all(fileInfoPromises);
+
+          async function readFileContents(filesInfo) {
+            const contentPromises = filesInfo.filter(fileInfo => fileInfo !== null).map(async fileInfo => {
+              
+              const contents = await FileSystem.readAsStringAsync(fileInfo.uri);
+              const splitContents = contents.split('|||');
+              const image = 'data:application/octet-stream;base64,' + splitContents[1]; 
+              
+              const prompt = base64.decode(splitContents[0]).toString('utf-8');
+              setImageSource((prevImageSource) => [
+                image,
+                ...prevImageSource,
+              ]);
+              setPromptList((prevPromptList) => [
+                prompt,
+                ...prevPromptList,
+              ]);
+              setURIList((prevURIList) => [
+                fileInfo.uri,
+                ...prevURIList,
+              ]);
+            });
+            
+          }
+          
+          readFileContents(filesInfo);
+           
+          //setPromptList(newPromptList); 
+        } catch (error) {
+          console.error('Error reading directory:', error);
+        }
+      };
+    
+      readFiles();
+    }, []);
+
+ 
   const switchPromptFunction = () => {
     setPromptLengthValue(!promptLengthValue);
     if (promptLengthValue) {
@@ -252,6 +360,7 @@ const App = () => {
               />
               {isImagePickerVisible && (
                 <MyImagePicker
+                  setIndexToDelete={setIndexToDelete}
                   columnCount={columnCount}
                   selectedImageIndex={selectedImageIndex}
                   setSelectedImageIndex={setSelectedImageIndex}
@@ -263,10 +372,6 @@ const App = () => {
                   setPlaySound={setPlaySound}
                   imageSource={imageSource}
                   setImageSource={setImageSource}
-                  styleSwitch={styleSwitch}
-                  setStyleSwitch={setStyleSwitch}
-                  settingSwitch={settingSwitch}
-                  setSettingSwitch={setSettingSwitch}
                 />
               )}
               <SliderComponent setSteps={setSteps} setGuidance={setGuidance} />
@@ -326,12 +431,13 @@ const App = () => {
                 flex: 1,
                 alignItems: "center",
                 justifyContent: "center",
-                marginTop: isImagePickerVisible ? 110 : 0,
+                imageTop: isImagePickerVisible ? 40 : 0,
               }}
             >
               {isImagePickerVisible && (
-                <>
+                
                   <MyImagePicker
+                    setIndexToDelete={setIndexToDelete}
                     columnCount={columnCount}
                     selectedImageIndex={selectedImageIndex}
                     setSelectedImageIndex={setSelectedImageIndex}
@@ -343,11 +449,9 @@ const App = () => {
                     setPlaySound={setPlaySound}
                     imageSource={imageSource}
                     setImageSource={setImageSource}
-                    styleSwitch={styleSwitch}
-                    setStyleSwitch={setStyleSwitch}
-                    settingSwitch={settingSwitch}
-                    setSettingSwitch={setSettingSwitch}
+                   
                   />
+                  )}
                   <Pressable
                     onPress={() => {
                       setSwapImage(true);
@@ -362,7 +466,7 @@ const App = () => {
                         backgroundColor: colors.buttonBackground,
                         width: pressed ? 52 : 60,
                         height: pressed ? 52 : 60,
-                        marginTop: -50,
+                        marginTop: 0,
                       },
                     ]}
                   >
@@ -377,9 +481,7 @@ const App = () => {
                         ]}
                       />
                     )}
-                  </Pressable>
-                </>
-              )}
+                  </Pressable>              
             </View>
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} />
             <View style={styles.imageCard}>

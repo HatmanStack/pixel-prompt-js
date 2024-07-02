@@ -54,15 +54,9 @@ Include an .env file for your Hugging Face API Key.
 All the models are opensource and available on HuggingFace.
 
 ### Diffusion
-
-#### Image to Image
-
-- **timbrooks/instruct-pix2pix**
-- **stabilityai/stable-diffusion-xl-refiner-1.0**
        
 #### Text to Image
 
-- **stabilityai/stable-diffusion-3-medium**
 - **stabilityai/stable-diffusion-xl-base-1.0**
 - **SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep**
 - **Fictiverse/Fictiverse/Stable_Diffusion_VoxelArt_Model**
@@ -81,13 +75,9 @@ All the models are opensource and available on HuggingFace.
 
 ### Prompts
 
-- **mistralai/Mistral-7B-Instruct-v0.3**
-- **roborovski/superprompt-v1**
 - **google/gemma-1.1-7b-it**
-
-## Functionality
-
-This App was creating using the HuggingFace Inference API.  Although Free to use, some functionality isn't available yet.  The Style and Layout switches are based on the IP adapter which isn't supported by the Inference API. If you decide to use custom endpoints this is available now
+- **mistralai/Mistral-7B-Instruct-v0.3**
+- **Gustavosta/MagicPrompt-Stable-Diffusion**
 
 ## License
 

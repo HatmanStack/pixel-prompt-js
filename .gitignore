@@ -4,6 +4,7 @@ yarn.lock
 .env
 app.json
 package-lock.json
+android/
 
 # macOS
 .DS_Store

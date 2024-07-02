@@ -1,5 +1,6 @@
 // Buttons.js
 import React, { useState } from "react";
+import { Dimensions } from 'react-native';
 import {
   StyleSheet,
   View,
@@ -32,6 +33,9 @@ const Buttons = ({
     switchPromptFunction();
   }
 
+  const screenWidth = Dimensions.get('window').width;
+  const marginLeftPercentage = 0.2; 
+
   return (
     <>
       {activity ? (
@@ -51,13 +55,9 @@ const Buttons = ({
                     setPlaySound("click");
                   }}
                   style={({ pressed }) => [
-                    {
-                      backgroundColor: pressed ? "#958DA5" : "#9DA58D",
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      margin: 10,
-                    },
+                    { backgroundColor: pressed ? "#958DA5" : "#9DA58D",
+                       marginLeft: screenWidth < 1000 ? screenWidth * .2 : screenWidth * .3,},
+                    styles.promptButtonAfter,
                   ]}
                 ></Pressable>
                 <View style={styles.columnContainer}>
@@ -104,7 +104,7 @@ const Buttons = ({
                   >
                     <Image
                     source={comboButtonPressed ?  coloredJoin : joinButton}
-                    style={[{marginRight: 30}, styles.changeButton]}
+                    style={[{marginRight: 30, marginTop: 10}, styles.changeButton]}
                   />
                     </Pressable>
                   </View>
@@ -206,6 +206,18 @@ const styles = StyleSheet.create({
     height: 20,
     justifyContent: "center",
     alignItems: "center", // change as needed
+    elevation: 3, // for Android shadow
+    shadowColor: "#000", // for iOS shadow
+    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
+    shadowOpacity: 0.25, // for iOS shadow
+    shadowRadius: 3.84, // for iOS shadow
+  },
+  promptButtonAfter: {
+    width: 50, // adjust size as needed
+    height: 50, // adjust size as needed
+    borderRadius: 25, // half of size to make it circular
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 3, // for Android shadow
     shadowColor: "#000", // for iOS shadow
     shadowOffset: { width: 0, height: 2 }, // for iOS shadow

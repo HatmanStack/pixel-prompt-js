@@ -8,13 +8,14 @@ import {
   Switch,
   FlatList,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+
 
 const addImage = require("../assets/add_image.png");
 const coloredDelete = require("../assets/delete_colored.png");
 const deleteButton = require("../assets/delete.png");
 
 const MyImagePicker = ({
+  setIndexToDelete,
   columnCount,
   selectedImageIndex,
   setSelectedImageIndex,
@@ -26,10 +27,7 @@ const MyImagePicker = ({
   setPlaySound,
   imageSource,
   setImageSource,
-  styleSwitch,
-  setStyleSwitch,
-  settingSwitch,
-  setSettingSwitch,
+  
 }) => {
   const [textHeight, setTextHeight] = useState(0);
   const [containerHeight, setContainerHeight] = useState(160);
@@ -44,34 +42,7 @@ const MyImagePicker = ({
     }
   }, [selectedImageIndex, textHeight]);
 
-  const selectImage = async (index) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need media library permissions to select an image.");
-      return;
-    }
-    console.log("Selecting image");
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      setImageSource((prevImageSource) => {
-        const newImageSource = [...prevImageSource];
-        newImageSource[index] = result.assets[0].uri;
-        newImageSource[index + 1] = addImage;
-        return newImageSource;
-      });
-      setPromptList((prevPromptSource) => {
-        const prevPrompt = [...prevPromptSource];
-        prevPrompt[index] = "Uploaded Image";
-        return prevPrompt;
-      });
-    }
-  };
+ 
 
   useEffect(() => {
     if (selectedImageIndex !== null) {
@@ -81,30 +52,21 @@ const MyImagePicker = ({
     }
   }, [selectedImageIndex]);
 
-  const styleSwitchFunction = () => {
-    setStyleSwitch(!styleSwitch);
-    setPlaySound("switch");
-  };
-
-  const settingSwitchFunction = () => {
-    setSettingSwitch(!settingSwitch);
-    setPlaySound("switch");
-  };
+  
 
   const deleteFromImageArray = (index) => {
+    setPlaySound("click");
     setImageSource((prevImageSource) => {
-      setPlaySound("click");
-      if (prevImageSource.length > 1) {
+      if (prevImageSource.length > 0) {
         return prevImageSource.filter((_, i) => i !== index);
       }
-      return [addImage];
     });
+    setIndexToDelete(index);
     setReturnedPrompt(promptList[index + 1]);
     setPromptList((prevPromptSource) => {
-      if (prevPromptSource.length > 1) {
+      if (prevPromptSource.length > 0) {
         return prevPromptSource.filter((_, i) => i !== index);
       }
-      return [""];
     });
   };
 
@@ -117,62 +79,24 @@ const MyImagePicker = ({
 
   return (
     <>
-      <View style={styles.switchesRowContainer}>
-        <View style={styles.columnContainer}>
-          <Text
-            style={[
-              { color: styleSwitch ? "#9DA58D" : "#FFFFFF" },
-              styles.sliderText,
-            ]}
-          >
-            Style
-          </Text>
-          <Switch
-            trackColor={{ false: "#9DA58D", true: "#767577" }}
-            thumbColor="#B58392"
-            activeThumbColor="#6750A4"
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={styleSwitchFunction}
-            value={styleSwitch}
-          />
-        </View>
-        <View style={styles.columnContainer}>
-          <Text
-            style={[
-              { color: settingSwitch ? "#9FA8DA" : "#FFFFFF" },
-              styles.sliderText,
-            ]}
-          >
-            Layout
-          </Text>
-          <Switch
-            trackColor={{ false: "#958DA5", true: "#767577" }}
-            thumbColor="#B58392"
-            activeThumbColor="#6750A4"
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={settingSwitchFunction}
-            value={settingSwitch}
-          />
-        </View>
-      </View>
-      <View style={styles.flatListContainer}>
         <FlatList
           data={imageSource}
           key={columnCount}
           numColumns={columnCount}
+          style={styles.flatListContainer}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item: source, index }) => (
             <View
               style={[
                 styles.imageColumnContainer,
                 {
-                  width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : index === imageSource.length - 1 ? 160 : 105,
+                  width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : 105,
                   height:
                     window.width < 1000 && selectedImageIndex == index
                       ? containerHeight
                       : selectedImageIndex === index
                         ? 440
-                        : index === imageSource.length - 1 ? 160 : 105,
+                        :  105,
                         margin: 0,
                   marginTop: selectedImageIndex === index ? 20 : 0,
                   overflow: "visible"
@@ -214,7 +138,7 @@ const MyImagePicker = ({
                   />
                 </Pressable>
               </View>
-              {index !== imageSource.length - 1 && (selectedImageIndex === null || index !== selectedImageIndex + 1) && (
+              { selectedImageIndex === null  && (
                 <Pressable
                   onPress={() => {
                     deleteFromImageArray(index);
@@ -235,7 +159,7 @@ const MyImagePicker = ({
               )}
               {window.width < 1000 &&
                 selectedImageIndex === index &&
-                index !== imageSource.length - 1 && (
+                 (
                   <Text
                     style={[styles.promptText, { flexShrink: 1 }]}
                     numberOfLines={1000}
@@ -247,21 +171,9 @@ const MyImagePicker = ({
                     {promptList[index]}
                   </Text>
                 )}
-              { index !== imageSource.length - 1 && !selectedImageIndex &&(
-                <Pressable
-                  style={[styles.selectButton]}
-                  onPress={() => {
-                    setPlaySound("click");
-                    selectImage(index);
-                  }}
-                >
-                  <Text style={styles.promptText}>Select</Text>
-                </Pressable>
-              )}
             </View>
           )}
         />
-      </View>
     </>
   );
 };
@@ -276,6 +188,7 @@ const styles = StyleSheet.create({
   flatListContainer: {
     width: "auto",
     height: "auto",
+    marginTop: 20,
   },
   switchesRowContainer: {
     backgroundColor: colors.backgroundColor,

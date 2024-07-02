@@ -1,4 +1,5 @@
 import React from "react";
+import { Dimensions } from 'react-native';
 import { StyleSheet, Pressable, Image } from "react-native";
 
 const Expand = ({
@@ -9,15 +10,15 @@ const Expand = ({
 }) => {
   const rightImage = require("../assets/right.png");
   const downImage = require("../assets/down.png");
-
+  const screenWidth = Dimensions.get('window').width;
+  const marginLeftPercentage = 0.1; 
   return (
     <Pressable
       style={[
         styles.expandButton,
         {
           alignSelf: "flex-start",
-          marginLeft: window.width < 1000 ? "20%" : "20%",
-          marginBottom: 0,
+          marginLeft: screenWidth < 1000 ? screenWidth * .05 : screenWidth * .2,
         },
       ]}
       onPress={() => {
