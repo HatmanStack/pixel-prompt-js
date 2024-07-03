@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: 25,
   },
   char: {
     marginHorizontal: 15,

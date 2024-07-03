@@ -8,8 +8,6 @@ export default function DropDownComponent({
 }) {
     const [placeholderModelID, setPlaceholderModelID] = useState("Model ID");
       const data = [
-        
-        
         {
           label: "Stable Diffusion XL",
           value: "stabilityai/stable-diffusion-xl-base-1.0",
@@ -18,8 +16,6 @@ export default function DropDownComponent({
           label: "SPO Diffusion XL",
           value: "SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep",
         },
-        
-        { label: "pix2pix", value: "timbrooks/instruct-pix2pix" },
         { label: "Voxel", value: "Fictiverse/Stable_Diffusion_VoxelArt_Model" },
         {
           label: "Paper Cut Out",
