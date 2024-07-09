@@ -11,33 +11,7 @@ export default function DropDownComponent({
         {
           label: "Stable Diffusion XL",
           value: "stabilityai/stable-diffusion-xl-base-1.0",
-        },
-        {
-          label: "SPO Diffusion XL",
-          value: "SPO-Diffusion-Models/SPO-SDXL_4k-p_10ep",
-        },
-        { label: "Voxel", value: "Fictiverse/Stable_Diffusion_VoxelArt_Model" },
-        {
-          label: "Paper Cut Out",
-          value: "Fictiverse/Stable_Diffusion_PaperCut_Model",
-        },
-        { label: "Van-Gogh", value: "dallinmackay/Van-Gogh-diffusion" },
-        { label: "Robots", value: "nousr/robo-diffusion" },
-        { label: "Anime", value: "Eugeoter/artiwaifu-diffusion-1.0" },
-        { label: "Arcane", value: "nitrosocke/Arcane-Diffusion" },
-        {
-          label: "Balloon Art",
-          value: "Fictiverse/Stable_Diffusion_BalloonArt_Model",
-        },
-        { label: "Open Journey", value: "prompthero/openjourney" },
-        {
-          label: "Flintstones",
-          value: "juliajoanna/sdxl-flintstones_finetuning_1",
-        },
-        { label: "SegMind", value: "segmind/Segmind-Vega" },
-        { label: "Absolute Reality", value: "digiplay/AbsoluteReality_v1.8.1" },
-        { label: "Photo", value: "dreamlike-art/dreamlike-photoreal-2.0" },
-        { label: "Acorn", value: "digiplay/Acorn_Photo_v1" },
+        }
       ];
       
 

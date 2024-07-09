@@ -9,6 +9,7 @@ import {
   Image,
   Dimensions,
 } from "react-native";
+import * as Updates from 'expo-updates';
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import { registerRootComponent } from "expo";
@@ -78,6 +79,23 @@ const App = () => {
     setMakeSound([sound, soundIncrement]);
   };
 
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          // Notify user or automatically reload
+          await Updates.reloadAsync(); 
+        }
+      } catch (e) {
+        // Handle any errors 
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+  
   useEffect(() => {
     async function deleteFile(uriToDelete) {
       if (uriToDelete) {
@@ -352,12 +370,7 @@ const App = () => {
                 </View>
               </View>
 
-              <Expand
-                setPlaySound={setPlaySound}
-                isImagePickerVisible={isImagePickerVisible}
-                setImagePickerVisible={setImagePickerVisible}
-                window={window}
-              />
+             
               {isImagePickerVisible && (
                 <MyImagePicker
                   setIndexToDelete={setIndexToDelete}
@@ -420,12 +433,7 @@ const App = () => {
             ) : (
               <></>
             )}
-            <Expand
-              setPlaySound={setPlaySound}
-              isImagePickerVisible={isImagePickerVisible}
-              setImagePickerVisible={setImagePickerVisible}
-              window={window}
-            />
+           
             <View
               style={{
                 flex: 1,
@@ -452,36 +460,7 @@ const App = () => {
                    
                   />
                   )}
-                  <Pressable
-                    onPress={() => {
-                      setSwapImage(true);
-                      setPlaySound("swoosh");
-                    }}
-                    style={({ pressed }) => [
-                      {
-                        width: 60, // adjust size as needed
-                        height: 60, // adjust size as needed
-                        borderRadius: 30,
-                        elevation: 3,
-                        backgroundColor: colors.buttonBackground,
-                        width: pressed ? 52 : 60,
-                        height: pressed ? 52 : 60,
-                        marginTop: 0,
-                      },
-                    ]}
-                  >
-                    {({ pressed }) => (
-                      <Image
-                        source={pressed ? rotatedCircle : circleImage}
-                        style={[
-                          styles.changeButton,
-                          pressed
-                            ? { width: 52, height: 52 }
-                            : { width: 60, height: 60 },
-                        ]}
-                      />
-                    )}
-                  </Pressable>              
+                           
             </View>
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} />
             <View style={styles.imageCard}>
