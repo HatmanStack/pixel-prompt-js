@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
 
 const click = require('../assets/click.wav');
