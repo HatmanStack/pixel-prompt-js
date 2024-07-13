@@ -56,6 +56,7 @@ const MyImagePicker = ({
 
   const deleteFromImageArray = (index) => {
     setPlaySound("click");
+    setSelectedImageIndex(null);
     setImageSource((prevImageSource) => {
       if (prevImageSource.length > 0) {
         return prevImageSource.filter((_, i) => i !== index);
