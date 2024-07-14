@@ -62,8 +62,6 @@ All the models are opensource and available on HuggingFace.
 - **Fictiverse/Voxel_XL_Lora**
 - **dallinmackay/Van-Gogh-diffusion**
 - **gsdf/Counterfeit-V2.5**
-- **digiplay/AbsoluteReality_v1.8.1**
-- **dreamlike-art/dreamlike-photoreal-2.0**
 - **digiplay/Acorn_Photo_v1**
 
 ### Prompts
