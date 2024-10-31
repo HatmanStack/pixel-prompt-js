@@ -1,6 +1,5 @@
 // Buttons.js
 import React, { useState } from "react";
-import { Dimensions } from 'react-native';
 import {
   StyleSheet,
   View,
@@ -22,8 +21,7 @@ const Buttons = ({
   longPrompt,
   setTextInference,
   switchPromptFunction,
-  promptLengthValue,
-  setParametersWrapper,
+  promptLengthValue
 }) => {
   
   const [comboButtonPressed, setComboButtonPressed] = useState(false);
@@ -32,9 +30,6 @@ const Buttons = ({
     setComboButtonPressed(false);
     switchPromptFunction();
   }
-
-  const screenWidth = Dimensions.get('window').width;
-  const marginLeftPercentage = 0.2; 
 
   return (
     <>
@@ -46,11 +41,96 @@ const Buttons = ({
         />
       ) : (
         <>
-          
+          {longPrompt ? (
+            <>
+              <View style={[styles.rowContainer]}>
+                <Pressable
+                  onPress={() => {
+                    setTextInference(true);
+                    setPlaySound("click");
+                  }}
+                  style={({ pressed }) => [
+                    {
+                      backgroundColor: pressed ? "#958DA5" : "#9DA58D",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      margin: 10,
+                    },
+                  ]}
+                ></Pressable>
+                <View style={styles.columnContainer}>
+                  <View style={[styles.rowContainer]}>
+                    <Text
+                      style={[
+                        {
+                          color: comboButtonPressed ? '#FFFFFF' : promptLengthValue ? "#FFFFFF" : "#9FA8DA",
+                          marginRight: 15,
+                        },
+                        styles.sliderText,
+                      ]}
+                    >
+                      Short
+                    </Text>
+                    <Text
+                      style={[
+                        {
+                          color: comboButtonPressed ? '#FFFFFF' : promptLengthValue ? "#9FA8DA" : "#FFFFFF",
+                          marginRight: 15,
+                        },
+                        styles.sliderText,
+                      ]}
+                    >
+                      Long
+                    </Text>
+                  </View>
+                  <View style={[styles.rowContainer, { paddingBottom: 10, justifyContent: "space-between" }]}>
+                  <Switch
+                    style={{ marginRight: 40 }} 
+                    trackColor={{ false: "#958DA5", true: "#767577" }}
+                    thumbColor="#B58392"
+                    activeThumbColor="#6750A4"
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={setThePromptValue}
+                    value={promptLengthValue}
+                  />
+                  <Pressable
+                    onPress={() => {
+                      switchToFlan();
+                      setComboButtonPressed(true);
+                      setPlaySound("click");
+                    }}
+                  >
+                    <Image
+                    source={comboButtonPressed ?  coloredJoin : joinButton}
+                    style={[{marginRight: 30}, styles.changeButton]}
+                  />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            </>
+          ) : (
+            <Pressable
+              onPress={() => {
+                setTextInference(true);
+                setPlaySound("click");
+              }}
+              style={({ pressed }) => [
+                { backgroundColor: pressed ? "#958DA5" : "#9DA58D" },
+                styles.button,
+              ]}
+            >
+              {({ pressed }) => (
+                <Text style={styles.promptText}>
+                  {pressed ? "PROMPTED!" : "Prompt"}
+                </Text>
+              )}
+            </Pressable>
+          )}
           <Pressable
             onPress={() => {
               setInferrenceButton(true);
-              setParametersWrapper();
               setPlaySound("click");
             }}
             style={({ pressed }) => [
@@ -124,18 +204,6 @@ const styles = StyleSheet.create({
     height: 20,
     justifyContent: "center",
     alignItems: "center", // change as needed
-    elevation: 3, // for Android shadow
-    shadowColor: "#000", // for iOS shadow
-    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
-    shadowOpacity: 0.25, // for iOS shadow
-    shadowRadius: 3.84, // for iOS shadow
-  },
-  promptButtonAfter: {
-    width: 50, // adjust size as needed
-    height: 50, // adjust size as needed
-    borderRadius: 25, // half of size to make it circular
-    justifyContent: "center",
-    alignItems: "center",
     elevation: 3, // for Android shadow
     shadowColor: "#000", // for iOS shadow
     shadowOffset: { width: 0, height: 2 }, // for iOS shadow

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StyleSheet } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 
@@ -7,14 +7,26 @@ export default function DropDownComponent({
   
 }) {
     const [placeholderModelID, setPlaceholderModelID] = useState("Model ID");
-      const data = [
+      const data = [ 
+        {
+          label: "Random",
+          value: "Random",
+        },
+        { label: "AuraFlow", value: "fal/AuraFlow" },
+        {
+          label: "Stable Diffusion 3",
+          value: "stabilityai/stable-diffusion-3-medium",
+        },
         {
           label: "Stable Diffusion XL",
           value: "stabilityai/stable-diffusion-xl-base-1.0",
-        }
+        },   
+        { label: "Pixel", value: "nerijs/pixel-art-xl" },
+        { label: "Voxel", value: "Fictiverse/Voxel_XL_Lora" },
+        { label: "Van-Gogh", value: "dallinmackay/Van-Gogh-diffusion" },
+        { label: "Anime - (gsdf)", value: "gsdf/Counterfeit-V2.5" },
       ];
       
-
   return (
     <Dropdown
       style={styles.dropdown}
@@ -25,7 +37,7 @@ export default function DropDownComponent({
       valueField="value"
       placeholder={placeholderModelID}
       onChange={(item) => {
-        passModelID(item.value);
+        passModelID(item);
         setPlaceholderModelID(item.label);
       }}
     />

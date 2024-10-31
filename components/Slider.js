@@ -2,9 +2,10 @@ import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import Slider from "@react-native-community/slider";
 
-export default function SliderComponent({ setSteps, setGuidance }) {
+export default function SliderComponent({ setSteps, setGuidance, setControl }) {
   const [samplingValue, setSamplingValue] = React.useState(28);
   const [guidanceValue, setGuidanceValue] = React.useState(5);
+  const [controlValue, setControlValue] = React.useState(1.0);
 
   // Handle sampling steps change
   const handleStepChange = (x) => {
@@ -16,6 +17,11 @@ export default function SliderComponent({ setSteps, setGuidance }) {
   const handleGuidanceChange = (x) => {
     setGuidanceValue(parseFloat(x.toFixed(2)));
     setGuidance(parseFloat(x.toFixed(2)));
+  };
+
+  const handleControlChange = (x) => {
+    setControlValue(parseFloat(x.toFixed(2)));
+    setControl(parseFloat(x.toFixed(2)));
   };
 
   return (
@@ -33,7 +39,7 @@ export default function SliderComponent({ setSteps, setGuidance }) {
         onValueChange={handleStepChange}
       />
       <Text style={styles.sliderValue}>{samplingValue}</Text>
-      <Text style={styles.captionText}>Guidance</Text>
+      <Text style={styles.captionText}>Prompt Guidance</Text>
       <Slider
         style={styles.slider}
         minimumValue={0}
@@ -46,6 +52,19 @@ export default function SliderComponent({ setSteps, setGuidance }) {
         onValueChange={handleGuidanceChange}
       />
       <Text style={styles.sliderValue}>{guidanceValue}</Text>
+      <Text style={styles.captionText}>Style & Layout</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={2}
+        step={0.1}
+        value={controlValue}
+        minimumTrackTintColor="#958DA5"
+        maximumTrackTintColor="#9DA58D"
+        thumbTintColor="#6750A4"
+        onValueChange={handleControlChange}
+      />
+      <Text style={styles.sliderValue}>{controlValue}</Text>
     </View>
   );
 }

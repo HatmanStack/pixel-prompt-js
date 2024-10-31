@@ -1,146 +1,152 @@
-// Inference.js
 import { useEffect } from "react";
-import { HfInference } from "@huggingface/inference";
-import Constants from "expo-constants";
+import Constants from 'expo-constants';
 
-const HF_TOKEN = Constants.expoConfig.extra.HF_TOKEN_VAR;
-const inference = new HfInference(HF_TOKEN);
+function getScaledIP(styleSwitch, settingSwitch) {
+  let scaledIP = 'Load original IP-Adapter';
+  if (styleSwitch) {
+    scaledIP = "Load only style blocks";
+  }
+  if (settingSwitch) {
+    scaledIP = "Load only layout blocks";
+  }
+  if (styleSwitch && settingSwitch) {
+    scaledIP = "Load style+layout block";
+  }
+  return scaledIP;
+}
 
 const Inference = ({
-  selectedImageIndex,
-  setInferrenceButton,
-  inferrenceButton,
-  setModelMessage,
-  imageSource,
-  parameters,
-  modelID,
-  prompt,
-  styleSwitch,
-  settingSwitch,
-  guidance,
-  steps,
-  setActivity,
-  setModelError,
-  setReturnedPrompt,
-  setInitialReturnedPrompt,
-  setInferredImage,
+      setImageSource,
+      setPromptList,
+      selectedImageIndex,
+      setInferrenceButton,
+      inferrenceButton,
+      setModelMessage,
+      imageSource,
+      modelID,
+      prompt,
+      styleSwitch,
+      settingSwitch,
+      control,
+      guidance,
+      steps,
+      setActivity,
+      setModelError,
+      setReturnedPrompt,
+      setInitialReturnedPrompt,
+      setInferredImage,
 }) => {
+ 
+  useEffect(() => {
+    const fetchImagesFromS3 = async () => {
+      try {
+        const AWS = require('aws-sdk');
+        
+
+        const s3 = new AWS.S3({
+          region: Constants.manifest.extra.AWS_REGION,
+          accessKeyId: Constants.manifest.extra.AWS_ID,
+          secretAccessKey: Constants.manifest.extra.AWS_SECRET
+        });
+        
+        const params = {
+          Bucket: Constants.manifest.extra.S3_BUCKET
+        };
+        
+        const data = await s3.listObjectsV2(params).promise();
+        
+        for (const item of data.Contents) {
+          
+          const objectParams = {
+            Bucket: Constants.manifest.extra.S3_BUCKET,
+            Key: item.Key
+          };
+          
+          const objectData = await s3.getObject(objectParams).promise();
+          const jsonData = JSON.parse(objectData.Body.toString('utf-8'));
+          
+          const base64Data = jsonData.base64image; 
+          const prompt = jsonData.returnedPrompt; 
+          setPromptList(prevPromptList => [prompt, ...prevPromptList]);
+          setImageSource(prevImageSource => [base64Data, ...prevImageSource]);
+        }
+
+      } catch (error) {
+        console.error('Error fetching images from S3:', error);
+      }
+    };
+
+    fetchImagesFromS3();
+  }, []);
+
   useEffect(() => {
     if (inferrenceButton) {
       setActivity(true);
-      setModelError(false);
-      let alteredPrompt = "";
-      if (modelID.includes("dallinmackay")) {
-        alteredPrompt = "lvngvncnt, " + prompt;
-      } else if (modelID.includes("nousr")) {
-        alteredPrompt = "nousr robot, " + prompt;
-      } else if (modelID.includes("nitrosocke")) {
-        alteredPrompt = "arcane, " + prompt;
-      } else if (modelID.includes("dreamlike")) {
-        alteredPrompt = "photo, " + prompt;
-      } else if (modelID.includes("prompthero")) {
-        alteredPrompt = "mdjrny-v4 style, " + prompt;
-      } else if (modelID.includes("Voxel")) {
-        alteredPrompt = "voxel style, " + prompt;
-      } else if (modelID.includes("BalloonArt")) {
-        alteredPrompt = "BalloonArt, " + prompt;
-      } else if (modelID.includes("PaperCut")) {
-        alteredPrompt = "PaperCut, " + prompt;
-      } else {
-        alteredPrompt = prompt;
-      }
-      if (modelID.includes('pix2pix')) {  //  Check for timeline on IP Adapater inference API
-        setModelMessage("Inference API img2img NotAvailable");
-        setActivity(false);
-        setModelError(true);
-        setInferrenceButton(false);
-        return;
-      }
-      console.log("Parameters:", parameters);
-      let scale = {};
-      
-      if (false) {
-        //   Check for timeline on IP Adapater inference API
-        setModelMessage("Model Waking");
-        setActivity(false);
-        setModelError(true);
-        setInferrencebutton(false);
-        inference
-          .textToImage({
-            model: modelID,
-            inputs: "Wake Up",
-            parameters: {
-              negative_prompt:
-                "",
-              guidance: guidance,
-              steps: steps,
-            },
-          })
-          return;
-        /** 
-        alteredPrompt = prompt;
-        if (styleSwitch) {
-          scale = {
-            up: { block_0: [0.0, 1.0, 0.0] },
-          };
-        }
-        if (settingSwitch) {
-          scale = {
-            down: { block_2: [0.0, 1.0] },
-            up: { block_0: [0.0, 1.0, 0.0] },
-          };
-        }*/
-      } else {
-        inference
-          .textToImage({
-            model: modelID,
-            inputs: alteredPrompt,
-            parameters: {
-              negative_prompt:
-                "watermark, lowres, low quality, worst quality, deformed, glitch, low contrast, noisy, saturation, blurry",
-              guidance: guidance,
-              steps: steps,
-            },
-          })
-          .then((response) => {
-            
-            setReturnedPrompt(prompt);
-            setInitialReturnedPrompt(prompt);
-            if (response instanceof Blob) {
-              // InferenceClient to check for List of Active Models
-              const reader = new FileReader();
-              reader.onload = () => {
-                setActivity(false);
-                setInferrenceButton(false);
-                if (typeof reader.result === "string") {
-                  console.log(reader.result.substring(0, 100));
+      let inferreceModel = modelID.value;
+      const ipScaleHolder = getScaledIP(styleSwitch, settingSwitch);
+      const controlImage = imageSource[selectedImageIndex];
 
-                  setInferredImage(reader.result);
-                } else {
-                  console.error(
-                    "Expected reader.result to be a string, got",
-                    typeof reader.result
-                  );
-                }
-              };
-              reader.onerror = (error) => {
-                console.log("Error reading Blob:", error);
-              };
-              reader.readAsDataURL(response);
-            }
-          })
-          .catch(function (error) {
-            setInferrenceButton(false);
-            setActivity(false);
+      const AWS = require('aws-sdk');
+      const lambda = new AWS.Lambda({
+        region: Constants.manifest.extra.AWS_REGION,
+        accessKeyId: Constants.manifest.extra.AWS_ID,
+        secretAccessKey: Constants.manifest.extra.AWS_SECRET
+      });
+
+      const params = {
+        FunctionName: Constants.manifest.extra.AWS_LAMBDA_FUNCTION,
+        InvocationType: 'RequestResponse',
+        Payload: JSON.stringify({
+          prompt: prompt,
+          steps: steps,
+          guidance: guidance,
+          modelID: inferreceModel,
+          image: controlImage,
+          target: ipScaleHolder,
+          control: control,
+          task: "image"
+        })
+      };
+
+      lambda.invoke(params)
+        .promise()
+        .then(data => {
+          const jsonHolder = JSON.parse(data.Payload).body;
+          const responseData = JSON.parse(jsonHolder);
+          if (/Model Waking/.test(responseData.output)) {
+            setModelMessage("Model Waking");
             setModelError(true);
-            setModelMessage("Model Error");
-            console.log(error);
-          });
-      }
+          } else if(/You have exceeded your GPU quota/.test(responseData.output)) {
+            const gpu = responseData.output.split(": ")[2];
+            const gpuName = gpu.slice(-9);
+            setModelMessage(`GPU Quota Exceeded! Try Random Models without enlarged images for ${gpuName.slice(0,-1)}`);
+            setModelError(true);
+          } else if(/An error occurred/.test(responseData.output)) {
+            setModelMessage(`Model Error!`);
+            setModelError(true);
+          } else {
+            setInitialReturnedPrompt("Model:\n" + responseData.model + "\n\nPrompt:\n" + prompt);
+            setModelError(false);
+          }
+          if(responseData.NSFW) {
+            setModelMessage(`NSFW...Image will not be Saved`);
+            setModelError(true);
+          }
+
+          setInferrenceButton(false);
+          setActivity(false);
+          setReturnedPrompt("Model:\n" + responseData.model + "\n\nPrompt:\n" + prompt);
+          setInferredImage("data:image/png;base64," + responseData.output);
+        })
+        .catch(error => {
+          setModelMessage("Application Error!");
+          setActivity(false);
+          setModelError(true);
+          setInferrenceButton(false);
+          console.log(error);
+        });
     }
   }, [inferrenceButton]);
-
-  return null;
 };
 
 export default Inference;

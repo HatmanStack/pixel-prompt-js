@@ -6,7 +6,7 @@ const swoosh = require('../assets/swoosh.mp3');
 const switchSound = require('../assets/switch.wav');
 const expand = require('../assets/expand.wav');
 
-const SoundPlayer = ({ makeSound}) => {
+const SoundPlayer = ({ makeSound }) => {
   const soundRef = useRef(null);
 
   useEffect(() => {
@@ -18,7 +18,6 @@ const SoundPlayer = ({ makeSound}) => {
       interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
     });
     return () => {
-      // Unload the sound when the component unmounts
       if (soundRef.current) {
         soundRef.current?.unloadAsync();
       }
@@ -27,13 +26,25 @@ const SoundPlayer = ({ makeSound}) => {
 
   useEffect(() => {
     const playSound = async () => {
-      const { sound } = await Audio.Sound.createAsync(
-        // Dynamically select the sound file based on makeSound
-        { uri: makeSound[0] === 'click' ? click : makeSound[0] === 'swoosh' ? swoosh : makeSound[0] === 'switch' ? switchSound : expand },
-        { shouldPlay: true }
-      );
-      soundRef.current = sound;
-      await sound.playAsync();
+      // Get the correct sound file directly without using uri
+      const soundFile = makeSound[0] === 'click' 
+        ? click 
+        : makeSound[0] === 'swoosh' 
+        ? swoosh 
+        : makeSound[0] === 'switch' 
+        ? switchSound 
+        : expand;
+
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          soundFile,
+          { shouldPlay: true }
+        );
+        soundRef.current = sound;
+        await sound.playAsync();
+      } catch (error) {
+        console.error('Error playing sound:', error, soundFile);
+      }
     };
 
     if (makeSound) {

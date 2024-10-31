@@ -1,10 +1,10 @@
 # Pixel Prompt JS
 
-**Pixel Prompt** is an app made with React Native built using Expo. It uses the Hugging Face Inference API along with  diffusion models to create images. An explanation of some of the componenets and deployment architectures: [Cloud Bound](https://medium.com/@HatmanStack/cloud-bound-react-native-and-fastapi-ml-684a658f967a).  This version is completly self-contained and uses the HuggingFace JS libraries to call the huggingface infernence api.  It can be built and deployed for web, android, or ios.
+**Pixel Prompt** is an app made with React Native built using Expo. It uses the Hugging Face Inference API along with  diffusion models to create images. An explanation of some of the componenets and deployment architectures: [Cloud Bound](https://medium.com/@HatmanStack/cloud-bound-react-native-and-fastapi-ml-684a658f967a).  This version is paired with AWS Lambda and uses the HuggingFace JS libraries to call the huggingface infernence api.  It can be built and deployed for web, android, or ios.
 
 ## Preview :zap:
 
-To preview the application visit the hosted version on the Hugging Face Spaces platform [here](https://huggingface.co/spaces/Hatman/pixel-prompt).
+To preview the application visit the hosted version on AWS [here](https://production.d2iujulgl0aoba.amplifyapp.com/).
 
 ## Screenshots :camera:
 
@@ -46,7 +46,11 @@ The app will be running locally at http://localhost:19006. For different environ
 Include an .env file for your Hugging Face API Key.
 
    ```shell
-   HF_TOKEN=<hf-api-token>
+  AWS_REGION=<region>
+  AWS_ID=<ID>
+  AWS_SECRET=<secret>
+  AWS_LAMBDA_FUNCTION=<name>
+  S3_BUCKET=<name>
    ```
 
 ## Models :sparkles:
@@ -55,20 +59,21 @@ All the models are opensource and available on HuggingFace.
        
 ### Diffusion
 
+- **Random**
+- **stabilityai/stable-diffusion-3.5**
+- **black-forest-labs/FLUX**
+- **fal/AuraFlow**
 - **stabilityai/stable-diffusion-3-medium**
 - **stabilityai/stable-diffusion-xl-base-1.0**
-- **fluently/Fluently-XL-Final**
 - **nerijs/pixel-art-xl**
 - **Fictiverse/Voxel_XL_Lora**
 - **dallinmackay/Van-Gogh-diffusion**
 - **gsdf/Counterfeit-V2.5**
-- **digiplay/Acorn_Photo_v1**
 
 ### Prompts
 
-- **mistralai/Mistral-7B-Instruct-v0.3**
+- **llama-3.1-8b-instant**
 - **Gustavosta/MagicPrompt-Stable-Diffusion**
-- **meta-llama/Meta-Llama-3-70B-Instruct**
 
 ## License
 

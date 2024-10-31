@@ -5,6 +5,8 @@ yarn.lock
 app.json
 package-lock.json
 android/
+dist/
+
 
 # macOS
 .DS_Store

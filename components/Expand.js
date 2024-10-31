@@ -1,37 +1,46 @@
 import React from "react";
-import { Dimensions } from 'react-native';
-import { StyleSheet, Pressable, Image } from "react-native";
+import { StyleSheet, Pressable, Image, Text, View } from "react-native";
+import { Dimensions } from "react-native";
 
-const Expand = ({
-  setPlaySound,
-  isImagePickerVisible,
-  setImagePickerVisible,
-  window,
-}) => {
+const Expand = ({ setPlaySound, isImagePickerVisible, setImagePickerVisible, setIsGuidanceVisible, isGuidanceVisible, isGuidance }) => {
+
   const rightImage = require("../assets/right.png");
   const downImage = require("../assets/down.png");
-  const screenWidth = Dimensions.get('window').width;
-  const marginLeftPercentage = 0.1; 
+  
   return (
+    <View style={[styles.galleryContainer]}>
     <Pressable
       style={[
         styles.expandButton,
-        {
-          alignSelf: "flex-start",
-          marginLeft: screenWidth < 1000 ? screenWidth * .05 : screenWidth * .2,
-        },
       ]}
-      onPress={() => {
-        setPlaySound("expand");
-        setImagePickerVisible(!isImagePickerVisible);
-      }}
+      onPress={() => {setPlaySound("expand"); {isGuidance ? setIsGuidanceVisible(!isGuidanceVisible): 
+        setImagePickerVisible(!isImagePickerVisible)
+        }}}
     >
-      {isImagePickerVisible ? (
-        <Image source={downImage} style={styles.expandImage} />
+      {isGuidance ? isGuidanceVisible ? (<Image
+          source={downImage}
+          style={styles.expandImage}
+        />
       ) : (
-        <Image source={rightImage} style={styles.expandImage} />
+        <Image
+          source={rightImage}
+          style={styles.expandImage}
+        />
+      ): isImagePickerVisible ? (
+        <Image
+          source={downImage}
+          style={styles.expandImage}
+        />
+      ) : (
+        <Image
+          source={rightImage}
+          style={styles.expandImage}
+        />
       )}
+      
     </Pressable>
+    <Text style={{fontSize: 24, color: '#ffffff', fontFamily: 'Sigmar', letterSpacing: 5}}>{isGuidance ? "Guidance": "Gallery"}</Text>
+    </View>
   );
 };
 
@@ -52,11 +61,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // for iOS shadow
     shadowOpacity: 0.25, // for iOS shadow
     shadowRadius: 3.84, // for iOS shadow
+    marginRight: 30,
+    margin:5
   },
   expandImage: {
     width: 20,
     height: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
+  galleryContainer: {
+    flex:1,
+    flexDirection:'row',
+    alignSelf: "flex-start",
+    marginLeft: Dimensions.get('window').width < 1000 ? "20%" : "20%",
+    marginBottom: 10,
+    
+  }
 });
 
 export default Expand;

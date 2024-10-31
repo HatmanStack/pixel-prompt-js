@@ -3,18 +3,17 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
-  useWindowDimensions,
   Image,
   View,
+  Dimensions
 } from "react-native";
 
 export default function PromptInputComponent({ setPlaySound, setPrompt, inferredPrompt }) {
   const [text, setText] = React.useState("");
-  const { width } = useWindowDimensions();
 
   const textInputStyle = {
     ...styles.input,
-    width: width > 500 ? 500 : width - 80,
+    width: Dimensions.get('window').width > 500 ? 500 : "100%",
   };
 
   useEffect(() => {
