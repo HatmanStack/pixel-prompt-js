@@ -15,6 +15,7 @@
     "@expo/prebuild-config": "^7.0.6",
     "@expo/vector-icons": "^14.0.0",
     "@expo/webpack-config": "~19.0.1",
+    "@gradio/client": "^1.7.1",
     "@huggingface/hub": "^0.15.1",
     "@huggingface/inference": "^2.7.0",
     "@react-native-community/slider": "4.5.2",
