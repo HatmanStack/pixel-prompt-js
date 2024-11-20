@@ -15,6 +15,129 @@ const addImage = require("../assets/add_image.png");
 const coloredDelete = require("../assets/delete_colored.png");
 const deleteButton = require("../assets/delete.png");
 
+const MemoizedListItem = React.memo(({ 
+  source,
+  index,
+  selectedImageIndex,
+  setSelectedImageIndex,
+  setPlaySound,
+  containerHeight,
+  columnCount,
+  imageSource,
+  promptList,
+  setTextHeight,
+  selectImage
+}) => {
+  const isStartOrEndOfRow = (index) => {
+    const isLastInRow = (selectedImageIndex + 1) % columnCount === 0 || selectedImageIndex === imageSource.length - 1;
+    const isFirstInRow = selectedImageIndex % columnCount === 0;
+    return selectedImageIndex === index + (isFirstInRow ? -1 : 1) || selectedImageIndex === index + (isFirstInRow ? -2 : isLastInRow ? 2 : -1);
+  };
+
+  return (
+    <View
+      style={[
+        styles.imageColumnContainer,
+        {
+          width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : index === imageSource.length - 1 ? 160 : 105,
+          height: Dimensions.get('window').width < 1000 && selectedImageIndex === index
+            ? containerHeight
+            : selectedImageIndex === index
+              ? 440
+              : index === imageSource.length - 1 ? 160 : 105,
+          margin: 0,
+          marginTop: selectedImageIndex === index ? 20 : 0,
+          overflow: "visible"
+        },
+      ]}
+    >
+      <View style={[styles.columnContainer]}>
+        <Pressable
+          onPress={() => {
+            setPlaySound("click");
+            if (selectedImageIndex === index) {
+              setSelectedImageIndex(null);
+              return;
+            }
+            setSelectedImageIndex(index);
+          }}
+          style={[
+            styles.imageCard,
+            {
+              alignItems: "flex-start",
+              justifyContent: "flex-start",
+              width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
+              height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
+              borderRadius: selectedImageIndex === index ? 30 : 0,
+            },
+          ]}
+        >
+          <Image
+            source={typeof source === "number" ? source : { uri: source }}
+            style={[
+              {
+                width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
+                height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
+                borderRadius: selectedImageIndex === index ? 30 : 0,
+              },
+            ]}
+          />
+        </Pressable>
+      </View>
+      { // Code to delete pics in gallery
+              /**index !== imageSource.length - 1 && (selectedImageIndex === null || index !== selectedImageIndex + 1) && 
+              (selectedImageIndex === null || (index - 2) % columnCount !== 0) && (
+                <Pressable
+                  onPress={() => {
+                    deleteFromImageArray(index);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                  }}
+                >
+                  {({ pressed }) => (
+                    <Image
+                      source={pressed ? coloredDelete : deleteButton}
+                      style={[styles.changeButton]}
+                    />
+                  )}
+                </Pressable>
+              )*/}
+      
+      {Dimensions.get('window').width < 1000 &&
+        selectedImageIndex === index &&
+        index !== imageSource.length - 1 && (
+          <Text
+            style={[styles.promptText, { flexShrink: 1 }]}
+            numberOfLines={1000}
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              setTextHeight(height);
+            }}
+          >
+            {promptList[index]}
+          </Text>
+      )}
+      
+      {index === imageSource.length - 1 && !selectedImageIndex &&
+        (selectedImageIndex === null || index !== selectedImageIndex + 2) && 
+        (selectedImageIndex === null || imageSource.length !== 2) && (
+          <Pressable
+            style={[styles.selectButton]}
+            onPress={() => {
+              setPlaySound("click");
+              selectImage(index);
+            }}
+          >
+            <Text style={[styles.promptText, {fontFamily:"Sigmar"}]}>Select</Text>
+          </Pressable>
+      )}
+    </View>
+  );
+});
+
 const MyImagePicker = ({
   columnCount,
   selectedImageIndex,
@@ -109,12 +232,6 @@ const MyImagePicker = ({
     });
   };
 
-  function isStartOrEndOfRow(index) {
-    const isLastInRow = (selectedImageIndex + 1) % columnCount === 0 || selectedImageIndex === imageSource.length - 1;
-    const isFirstInRow = selectedImageIndex % columnCount === 0;
-    return selectedImageIndex === index + (isFirstInRow ? -1 : 1) || selectedImageIndex === index + (isFirstInRow ? -2 : isLastInRow ? 2 : -1);
-  }
-
   return (
     <><Text style={[styles.promptText,{ width: 500, margin: 20, fontSize: 14}]}>Click Image to Enlarge. If Image is enlarged it will be used as an input image for the next image generated. Use either or both the Style and Layout attributes to affect how the model interprets the input image.</Text>
       <View style={styles.switchesRowContainer}>
@@ -156,113 +273,35 @@ const MyImagePicker = ({
         </View>
       </View>
       <View style={styles.flatListContainer}>
-        <FlatList
+      <FlatList
           data={imageSource}
           key={columnCount}
           numColumns={columnCount}
           keyExtractor={(item, index) => index.toString()}
+          initialNumToRender={1}                    // Reduced initial render
+          maxToRenderPerBatch={1}                   // Reduced batch size
+          windowSize={8}                            // Add window size
+          removeClippedSubviews={true}             // Remove items when off screen
+          updateCellsBatchingPeriod={16}           // Add batching period
+          onEndReachedThreshold={0.5}              // Load more when halfway through
+          maintainVisibleContentPosition={{         // Maintain scroll position
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 10,
+          }}
           renderItem={({ item: source, index }) => (
-            <View
-              style={[
-                styles.imageColumnContainer,
-                {
-                  width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : index === imageSource.length - 1 ? 160 : 105,
-                  height:
-                  Dimensions.get('window').width < 1000 && selectedImageIndex == index
-                      ? containerHeight
-                      : selectedImageIndex === index
-                        ? 440
-                        : index === imageSource.length - 1 ? 160 : 105,
-                        margin: 0,
-                  marginTop: selectedImageIndex === index ? 20 : 0,
-                  overflow: "visible"
-                },
-              ]}
-            >
-              <View style={[styles.columnContainer]}>
-                <Pressable
-                  onPress={() => {
-                    setPlaySound("click");
-                    if (selectedImageIndex === index) {
-                      setSelectedImageIndex(null);
-                      return;
-                    }
-                    setSelectedImageIndex(index);
-                  }}
-                  style={[
-                    styles.imageCard,
-                    {
-                      alignItems: "flex-start",
-                      justifyContent: "flex-start",
-                      width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
-                      height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
-                      borderRadius: selectedImageIndex === index ? 30 : 0,
-                    },
-                  ]}
-                >
-                  <Image
-                    source={
-                      typeof source === "number" ? source : { uri: source }
-                    }
-                    style={[
-                      {
-                        width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 320 : 100,
-                        height: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 400 : 100,
-                        borderRadius: selectedImageIndex === index ? 30 : 0,
-                      },
-                    ]}
-                  />
-                </Pressable>
-              </View>
-              { // Code to delete pics in gallery
-              /**index !== imageSource.length - 1 && (selectedImageIndex === null || index !== selectedImageIndex + 1) && 
-              (selectedImageIndex === null || (index - 2) % columnCount !== 0) && (
-                <Pressable
-                  onPress={() => {
-                    deleteFromImageArray(index);
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                  }}
-                >
-                  {({ pressed }) => (
-                    <Image
-                      source={pressed ? coloredDelete : deleteButton}
-                      style={[styles.changeButton]}
-                    />
-                  )}
-                </Pressable>
-              )*/}
-              {Dimensions.get('window').width < 1000 &&
-                selectedImageIndex === index &&
-                index !== imageSource.length - 1 && (
-                  <Text
-                    style={[styles.promptText, { flexShrink: 1 }]}
-                    numberOfLines={1000}
-                    onLayout={(event) => {
-                      const { height } = event.nativeEvent.layout;
-                      setTextHeight(height);
-                    }}
-                  >
-                    {promptList[index]}
-                  </Text>
-                )}
-              {index === imageSource.length - 1 && !selectedImageIndex &&
-               (selectedImageIndex === null || index !== selectedImageIndex + 2) && 
-               (selectedImageIndex === null || imageSource.length !== 2) && (
-                <Pressable
-                  style={[styles.selectButton]}
-                  onPress={() => {
-                    setPlaySound("click");
-                    selectImage(index);
-                  }}
-                >
-                  <Text style={[styles.promptText, {fontFamily:"Sigmar"}]}>Select</Text>
-                </Pressable>
-              )}
-            </View>
+            <MemoizedListItem
+              source={source}
+              index={index}
+              selectedImageIndex={selectedImageIndex}
+              setSelectedImageIndex={setSelectedImageIndex}
+              setPlaySound={setPlaySound}
+              containerHeight={containerHeight}
+              columnCount={columnCount}
+              imageSource={imageSource}
+              promptList={promptList}
+              setTextHeight={setTextHeight}
+              selectImage={selectImage}
+            />
           )}
         />
       </View>
