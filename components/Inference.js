@@ -113,6 +113,7 @@ const Inference = ({
         .then(data => {
           const jsonHolder = JSON.parse(data.Payload).body;
           const responseData = JSON.parse(jsonHolder);
+          console.log(responseData);
           if (/Model Waking/.test(responseData.output)) {
             setModelMessage("Model Waking");
             setModelError(true);

@@ -17,9 +17,21 @@ export default function DropDownComponent({
           value: "True Random",
         },
         {
-          label: "Stable Diffusion XL",
-          value: "stabilityai/stable-diffusion-xl-base-1.0",
+          label: "SD 3.5 Turbo",
+          value: "stabilityai/stable-diffusion-3.5-large-turbo",
         },   
+        {
+          label: "AWS Nova Canvas",
+          value: "AWS Nova Canvas",
+        }, 
+        {
+          label: "OpenAI Dalle3",
+          value: "OpenAI Dalle3",
+        }, 
+        {
+          label: "SD 3.5 Large",
+          value: "stabilityai/stable-diffusion-3.5-large",
+        }, 
         { label: "Pixel", value: "nerijs/pixel-art-xl" },
         { label: "Voxel", value: "Fictiverse/Voxel_XL_Lora" },
         { label: "Anime - (gsdf)", value: "gsdf/Counterfeit-V2.5" },
