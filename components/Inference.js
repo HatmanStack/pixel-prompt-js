@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Constants from "expo-constants";
 
 function getScaledIP(styleSwitch, settingSwitch) {
@@ -36,28 +36,34 @@ const Inference = ({
   setInitialReturnedPrompt,
   setInferredImage,
 }) => {
+
+  const [apiCalls, setApiCalls] = useState([]);
   useEffect(() => {
     const fetchImagesFromS3 = async () => {
       try {
         const AWS = require("aws-sdk");
 
         const s3 = new AWS.S3({
-          region: Constants.manifest.extra.AWS_REGION,
-          accessKeyId: Constants.manifest.extra.AWS_ID,
-          secretAccessKey: Constants.manifest.extra.AWS_SECRET,
+          region: process.env.EXPO_PUBLIC_AWS_REGION,
+          accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
+          secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
         });
 
         const params = {
-          Bucket: Constants.manifest.extra.S3_BUCKET,
+          Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
         };
-
+        
         const data = await s3.listObjectsV2(params).promise();
-
+        
         for (const item of data.Contents) {
           if (item.Key === "images/") continue;
+          if (item.Key.includes('cache')) continue;
+          if (item.Key.includes('overflow_images')) continue;
+          if (item.Key.includes('prompts')) continue;
+          console.log(item)
           try {
             const objectParams = {
-              Bucket: Constants.manifest.extra.S3_BUCKET,
+              Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
               Key: item.Key,
             };
 
@@ -86,20 +92,50 @@ const Inference = ({
 
   useEffect(() => {
     if (inferrenceButton) {
+      setModelError(false);
+      const now = Date.now();
+      const tenMinutesAgo = now - 10 * 60 * 1000;
+      const recentCalls = apiCalls.filter(timestamp => timestamp > tenMinutesAgo);
+      if (recentCalls.length >= 3) {
+        setModelMessage("Rate limit: 3 calls per 10 minutes. Please wait.");
+        setModelError(true);
+        setActivity(false);
+        setInferrenceButton(false);
+        return;
+    }
+    setApiCalls([...recentCalls, now]);
+
       setActivity(true);
+      if (/elf|elven/i.test(prompt)) {
+          const trollImages = [
+            require('../assets/troll/troll_1.jpg'),
+            require('../assets/troll/troll_2.jpg'),
+            require('../assets/troll/troll_3.jpg'),
+            require('../assets/troll/troll_4.jpg'),
+            require('../assets/troll/troll.jpg'),
+        ];
+        const randomTroll = trollImages[Math.floor(Math.random() * trollImages.length)];
+        setReturnedPrompt(
+          "Model:\nThese are not the Droids you are looking for\n\nPrompt:\nYou have to pay the Troll Toll to get inside this boys hole" 
+        );
+        setInferredImage(randomTroll);
+        setActivity(false);
+        setInferrenceButton(false);
+        return;
+    }
       let inferreceModel = modelID.value;
       const ipScaleHolder = getScaledIP(styleSwitch, settingSwitch);
       const controlImage = imageSource[selectedImageIndex];
 
       const AWS = require("aws-sdk");
       const lambda = new AWS.Lambda({
-        region: Constants.manifest.extra.AWS_REGION,
-        accessKeyId: Constants.manifest.extra.AWS_ID,
-        secretAccessKey: Constants.manifest.extra.AWS_SECRET,
+        region: process.env.EXPO_PUBLIC_AWS_REGION,
+        accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
+        secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
       });
 
       const params = {
-        FunctionName: Constants.manifest.extra.AWS_LAMBDA_FUNCTION,
+        FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: "RequestResponse",
         Payload: JSON.stringify({
           prompt: prompt,
