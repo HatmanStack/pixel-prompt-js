@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import Constants from 'expo-constants';
 import seeds from "../assets/seeds.json";
 
 const PromptInference = ({
@@ -28,13 +27,13 @@ const PromptInference = ({
 
       const AWS = require('aws-sdk');
       const lambda = new AWS.Lambda({
-        region: Constants.manifest.extra.AWS_REGION,
-          accessKeyId: Constants.manifest.extra.AWS_ID,
-          secretAccessKey: Constants.manifest.extra.AWS_SECRET
+        region: process.env.EXPO_PUBLIC_AWS_REGION,
+        accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
+        secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
       });
 
       const params = {
-        FunctionName: Constants.manifest.extra.AWS_LAMBDA_FUNCTION,
+        FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: 'RequestResponse',
         Payload: JSON.stringify({
           itemString: alteredPrompt,

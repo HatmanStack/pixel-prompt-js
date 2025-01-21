@@ -60,12 +60,16 @@ const Inference = ({
           if (item.Key.includes('cache')) continue;
           if (item.Key.includes('overflow_images')) continue;
           if (item.Key.includes('prompts')) continue;
+          if (item.Key.includes('rate')) continue;
           console.log(item)
           try {
             const objectParams = {
               Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
               Key: item.Key,
             };
+            if(item.Key.includes('ratelimit.json')){
+              setApiCalls((JSON.parse(objectData.Body.toString("utf-8"))).timestamps);
+            }
 
             const objectData = await s3.getObject(objectParams).promise();
             const jsonData = JSON.parse(objectData.Body.toString("utf-8"));
@@ -93,18 +97,6 @@ const Inference = ({
   useEffect(() => {
     if (inferrenceButton) {
       setModelError(false);
-      const now = Date.now();
-      const tenMinutesAgo = now - 10 * 60 * 1000;
-      const recentCalls = apiCalls.filter(timestamp => timestamp > tenMinutesAgo);
-      if (recentCalls.length >= 3) {
-        setModelMessage("Rate limit: 3 calls per 10 minutes. Please wait.");
-        setModelError(true);
-        setActivity(false);
-        setInferrenceButton(false);
-        return;
-    }
-    setApiCalls([...recentCalls, now]);
-
       setActivity(true);
       if (/elf|elven/i.test(prompt)) {
           const trollImages = [
@@ -170,6 +162,9 @@ const Inference = ({
             setModelError(true);
           } else if (/An error occurred/.test(responseData.output)) {
             setModelMessage(`Model Error!`);
+            setModelError(true);
+          } else if (/Rate/.test(responseData.output)) {
+            setModelMessage(`Rate Limit Exceeded`);
             setModelError(true);
           } else {
             setInitialReturnedPrompt(
