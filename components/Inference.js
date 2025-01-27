@@ -98,13 +98,15 @@ const Inference = ({
     if (inferrenceButton) {
       setModelError(false);
       setActivity(true);
-      if (/elf|elven/i.test(prompt)) {
+      if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies)\b/i.test(prompt)) {
           const trollImages = [
             require('../assets/troll/troll_1.jpg'),
-            require('../assets/troll/troll_2.jpg'),
+            require('../assets/troll/ct.png'),
+            require('../assets/troll/ct1.png'),
+            require('../assets/troll/ct2.png'),
+            require('../assets/troll/ct3.png'),
             require('../assets/troll/troll_3.jpg'),
-            require('../assets/troll/troll_4.jpg'),
-            require('../assets/troll/troll.jpg'),
+            require('../assets/troll/troll_4.jpg'), 
         ];
         const randomTroll = trollImages[Math.floor(Math.random() * trollImages.length)];
         setReturnedPrompt(
