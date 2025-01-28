@@ -1,5 +1,5 @@
 // Buttons.js
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -7,15 +7,10 @@ import {
   Pressable,
   ActivityIndicator,
   Switch,
-  Image,
 } from "react-native";
-
-const coloredJoin = require("../assets/join_colored.png");
-const joinButton = require("../assets/join.png");
 
 const Buttons = ({
   setPlaySound,
-  switchToFlan,
   setInferrenceButton,
   activity,
   longPrompt,
@@ -24,10 +19,7 @@ const Buttons = ({
   promptLengthValue
 }) => {
   
-  const [comboButtonPressed, setComboButtonPressed] = useState(false);
-
   const setThePromptValue = () => {
-    setComboButtonPressed(false);
     switchPromptFunction();
   }
 
@@ -46,7 +38,7 @@ const Buttons = ({
               <View style={[styles.rowContainer]}>
                 <Pressable
                   onPress={() => {
-                    setTextInference(true);
+                    console.log('clicked');
                     setPlaySound("click");
                   }}
                   style={({ pressed }) => [
@@ -64,7 +56,7 @@ const Buttons = ({
                     <Text
                       style={[
                         {
-                          color: comboButtonPressed ? '#FFFFFF' : promptLengthValue ? "#FFFFFF" : "#9FA8DA",
+                          color: promptLengthValue ? "#FFFFFF" : "#9FA8DA",
                           marginRight: 15,
                         },
                         styles.sliderText,
@@ -75,7 +67,7 @@ const Buttons = ({
                     <Text
                       style={[
                         {
-                          color: comboButtonPressed ? '#FFFFFF' : promptLengthValue ? "#9FA8DA" : "#FFFFFF",
+                          color: promptLengthValue ? "#9FA8DA" : "#FFFFFF",
                           marginRight: 15,
                         },
                         styles.sliderText,
@@ -94,18 +86,6 @@ const Buttons = ({
                     onValueChange={setThePromptValue}
                     value={promptLengthValue}
                   />
-                  <Pressable
-                    onPress={() => {
-                      switchToFlan();
-                      setComboButtonPressed(true);
-                      setPlaySound("click");
-                    }}
-                  >
-                    <Image
-                    source={comboButtonPressed ?  coloredJoin : joinButton}
-                    style={[{marginRight: 30}, styles.changeButton]}
-                  />
-                    </Pressable>
                   </View>
                 </View>
               </View>

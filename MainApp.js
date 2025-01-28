@@ -49,7 +49,6 @@ export default function App() {
   const [promptLengthValue, setPromptLengthValue] = useState(false);
   const [modelMessage, setModelMessage] = useState("");
   const [inferrenceButton, setInferrenceButton] = useState(null);
-  const [flanPrompt, setFlanPrompt] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [imageSource, setImageSource] = useState([addImage]);
   const [settingSwitch, setSettingSwitch] = useState(false);
@@ -97,10 +96,6 @@ export default function App() {
     }
   };
 
-  const switchToFlan = () => {
-    setInferredPrompt(flanPrompt);
-  };
-
   const updateColumnCount = (width) => {
     if (width < 600) setColumnCount(3);
     else if (width >= 600 && width < 1000) setColumnCount(4);
@@ -123,7 +118,6 @@ export default function App() {
     <View style={styles.titlecontainer}>
       <SoundPlayer makeSound={makeSound}/>
       <PromptInference
-        setFlanPrompt={setFlanPrompt}
         prompt={prompt}
         textInference={textInference}
         setTextInference={setTextInference}
@@ -210,7 +204,6 @@ export default function App() {
                 <View style={styles.columnContainer}>
                   <Buttons
                     setPlaySound={setPlaySound}
-                    switchToFlan={switchToFlan}
                     setInferrenceButton={setInferrenceButton}
                     activity={activity}
                     longPrompt={longPrompt}
@@ -303,7 +296,6 @@ export default function App() {
             />
             <Buttons
               setPlaySound={setPlaySound}
-              switchToFlan={switchToFlan}
               setInferrenceButton={setInferrenceButton}
               activity={activity}
               longPrompt={longPrompt}

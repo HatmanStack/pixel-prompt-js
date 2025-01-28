@@ -61,7 +61,7 @@ const Inference = ({
           if (item.Key.includes('overflow_images')) continue;
           if (item.Key.includes('prompts')) continue;
           if (item.Key.includes('rate')) continue;
-          console.log(item)
+          
           try {
             const objectParams = {
               Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,

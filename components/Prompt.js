@@ -13,6 +13,7 @@ const PromptInference = ({
   setActivity,
   setModelError,
 }) => {
+  
   useEffect(() => {
     if (textInference) {
       setActivity(true);
@@ -24,7 +25,7 @@ const PromptInference = ({
       } else {
         alteredPrompt = prompt;
       }
-
+      
       const AWS = require('aws-sdk');
       const lambda = new AWS.Lambda({
         region: process.env.EXPO_PUBLIC_AWS_REGION,
@@ -40,7 +41,7 @@ const PromptInference = ({
           task: "text"
         })
       };
-
+      console.log(params)
       lambda.invoke(params, (err, data) => {
         if (err) {
           console.error("Lambda Error:", err);
@@ -48,13 +49,11 @@ const PromptInference = ({
           setActivity(false);
           return;
         }
-
+        console.log(data);
         try {
           const jsonHolder = JSON.parse(data.Payload).body;
           const responseData = JSON.parse(jsonHolder);
-          const generatedText = responseData.plain;
-          const longPrompt = generatedText.split("Stable Diffusion Prompt:")[1];
-          setFlanPrompt(responseData.magic);
+          const longPrompt = responseData.plain;
           setLongPrompt(longPrompt);
           setShortPrompt(alteredPrompt);
           if (!promptLengthValue) {
@@ -68,7 +67,7 @@ const PromptInference = ({
         }
         setActivity(false);
       });
-
+      
       setTextInference(false);
     }
   }, [textInference]);
