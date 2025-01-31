@@ -39,6 +39,7 @@ const Buttons = ({
                 <Pressable
                   onPress={() => {
                     console.log('clicked');
+                    setTextInference(true);
                     setPlaySound("click");
                   }}
                   style={({ pressed }) => [

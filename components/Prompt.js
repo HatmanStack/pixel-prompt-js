@@ -41,7 +41,7 @@ const PromptInference = ({
           task: "text"
         })
       };
-      console.log(params)
+      
       lambda.invoke(params, (err, data) => {
         if (err) {
           console.error("Lambda Error:", err);
