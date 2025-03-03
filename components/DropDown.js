@@ -8,17 +8,14 @@ export default function DropDownComponent({
 }) {
     const [placeholderModelID, setPlaceholderModelID] = useState("Model ID");
       const data = [ 
-        {
-          label: "Random",
-          value: "Random",
-        },
-        {
-          label: "True Random",
-          value: "True Random",
-        },
+        
         {
           label: "SD 3.5 Turbo",
           value: "stabilityai/stable-diffusion-3.5-large-turbo",
+        },   
+        {
+          label: "Black Forest Labs",
+          value: "black-forest-labs/FLUX.1-dev",
         },   
         {
           label: "AWS Nova Canvas",
