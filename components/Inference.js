@@ -98,7 +98,7 @@ const Inference = ({
     if (inferrenceButton) {
       setModelError(false);
       setActivity(true);
-      if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies)\b/i.test(prompt)) {
+      if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies|naked|nude|shower|bare)\b/i.test(prompt)) {
           const trollImages = [
             require('../assets/troll/troll_1.jpg'),
             require('../assets/troll/ct.png'),
