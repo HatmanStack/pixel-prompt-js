@@ -39,12 +39,12 @@ const MemoizedListItem = React.memo(({
       style={[
         styles.imageColumnContainer,
         {
-          width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : index === imageSource.length - 1 ? 160 : 105,
+          width: isStartOrEndOfRow(index) ? 0 : selectedImageIndex === index ? 330 : 105,
           height: Dimensions.get('window').width < 1000 && selectedImageIndex === index
             ? containerHeight
             : selectedImageIndex === index
               ? 440
-              : index === imageSource.length - 1 ? 160 : 105,
+              : 105,
           margin: 0,
           marginTop: selectedImageIndex === index ? 20 : 0,
           overflow: "visible"
@@ -121,7 +121,7 @@ const MemoizedListItem = React.memo(({
           </Text>
       )}
       
-      {index === imageSource.length - 1 && !selectedImageIndex &&
+      {/**{index === imageSource.length - 1 && !selectedImageIndex &&
         (selectedImageIndex === null || index !== selectedImageIndex + 2) && 
         (selectedImageIndex === null || imageSource.length !== 2) && (
           <Pressable
@@ -133,7 +133,7 @@ const MemoizedListItem = React.memo(({
           >
             <Text style={[styles.promptText, {fontFamily:"Sigmar"}]}>Select</Text>
           </Pressable>
-      )}
+      )}*/}
     </View>
   );
 });
@@ -233,9 +233,9 @@ const MyImagePicker = ({
   };
 
   return (
-    <><Text style={[styles.promptText,{ width: 500, margin: 20, fontSize: 14}]}>Click Image to Enlarge. If Image is enlarged it will be used as an input image for the next image generated. Use either or both the Style and Layout attributes to affect how the model interprets the input image.</Text>
+    <>{/**<Text style={[styles.promptText,{ width: 500, margin: 20, fontSize: 14}]}>Click Image to Enlarge. If Image is enlarged it will be used as an input image for the next image generated. Use either or both the Style and Layout attributes to affect how the model interprets the input image.</Text>*/}
       <View style={styles.switchesRowContainer}>
-        <View style={styles.columnContainer}>
+       {/** <View style={styles.columnContainer}>
           <Text
             style={[
               { color: styleSwitch ? "#9DA58D" : "#FFFFFF" },
@@ -252,7 +252,7 @@ const MyImagePicker = ({
             onValueChange={styleSwitchFunction}
             value={styleSwitch}
           />
-        </View>
+        </View>*/ }
         <View style={styles.columnContainer}>
           <Text
             style={[
@@ -260,7 +260,7 @@ const MyImagePicker = ({
               styles.sliderText,
             ]}
           >
-            Layout
+            Saftey
           </Text>
           <Switch
             trackColor={{ false: "#958DA5", true: "#767577" }}
@@ -273,6 +273,7 @@ const MyImagePicker = ({
         </View>
       </View>
       <View style={styles.flatListContainer}>
+      {imageSource.length > 0 && ( 
       <FlatList
           data={imageSource}
           key={columnCount}
@@ -303,7 +304,8 @@ const MyImagePicker = ({
               selectImage={selectImage}
             />
           )}
-        />
+          />
+        )}
       </View>
     </>
   );
@@ -340,14 +342,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "column",
   },
-  selectButton: {
-    marginTop: 10,
-    borderRadius: 4,
-    paddingHorizontal: 32,
-    elevation: 3,
-    fontFamily: "Sigmar",
-    backgroundColor: colors.selectButtonBackground,
-  },
   promptText: {
     color: colors.white,
     fontSize: 18,
@@ -371,13 +365,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  changeButton: {
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  }
+  
 });
 
 export default MyImagePicker;

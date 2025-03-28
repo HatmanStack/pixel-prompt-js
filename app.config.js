@@ -31,12 +31,6 @@ export default {
     
   },
   extra: {
-    HF_TOKEN_VAR: process.env.HF_TOKEN,
-    AWS_SECRET: process.env.AWS_SECRET,
-    AWS_ID: process.env.AWS_ID,
-    AWS_LAMBDA_FUNCTION: process.env.AWS_LAMBDA_FUNCTION,
-    AWS_REGION: process.env.AWS_REGION,
-    S3_BUCKET: process.env.S3_BUCKET,
     eas: {
       projectId: 'c6b10366-df30-4f21-b5a5-1d8266947529'
     }

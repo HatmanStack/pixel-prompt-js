@@ -24,7 +24,7 @@ import SoundPlayer from "./components/Sounds";
 
 const assetImage = require("./assets/avocado.jpg");
 const circleImage = require("./assets/circle.png");
-const addImage = require("./assets/add_image.png");
+//const addImage = require("./assets/add_image.png");
 const rotatedCircle = require("./assets/rotated_circle.png");
 
 export default function App() {
@@ -50,7 +50,7 @@ export default function App() {
   const [modelMessage, setModelMessage] = useState("");
   const [inferrenceButton, setInferrenceButton] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [imageSource, setImageSource] = useState([addImage]);
+  const [imageSource, setImageSource] = useState([]);
   const [settingSwitch, setSettingSwitch] = useState(false);
   const [styleSwitch, setStyleSwitch] = useState(false);
   const [soundIncrement, setSoundIncrement] = useState(null);
@@ -127,6 +127,7 @@ export default function App() {
         promptLengthValue={promptLengthValue}
         setActivity={setActivity}
         setModelError={setModelError}
+        settingSwitch={settingSwitch}
       />
       <Inference
         setImageSource={setImageSource}
@@ -228,10 +229,10 @@ export default function App() {
               isGuidance={true}
             />
             {isGuidanceVisible && <Text style={[styles.promptText,{ width: isWindowBiggerThanContainer, margin: 20, fontSize: 14}]}>
-              Select a model from the drop down menu or by default receive a Random model. 
-              The prompt button returns three different prompts; a seed prompt, descriptive prompt and magic prompt.
+              Select a model from the drop down menu. 
+              The prompt button returns two different prompts; a seed prompt, descriptive prompt.
               If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt.
-              To generate fresh prompts clear the input window. The sliders dictate the strength of each attribute.</Text>}
+              To generate fresh prompts clear the input window. To save images to the app the Saftey Option must be enabled. </Text>}
                 <Expand
                   setPlaySound={setPlaySound}
                   isImagePickerVisible={isImagePickerVisible}

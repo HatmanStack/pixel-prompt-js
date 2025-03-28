@@ -1,19 +1,5 @@
 import { useEffect, useState } from "react";
-import Constants from "expo-constants";
 
-function getScaledIP(styleSwitch, settingSwitch) {
-  let scaledIP = "Load original IP-Adapter";
-  if (styleSwitch) {
-    scaledIP = "Load only style blocks";
-  }
-  if (settingSwitch) {
-    scaledIP = "Load only layout blocks";
-  }
-  if (styleSwitch && settingSwitch) {
-    scaledIP = "Load style+layout block";
-  }
-  return scaledIP;
-}
 
 const Inference = ({
   setImageSource,
@@ -59,6 +45,7 @@ const Inference = ({
           if (item.Key === "images/") continue;
           if (item.Key.includes('cache')) continue;
           if (item.Key.includes('overflow_images')) continue;
+          if (item.Key.includes('nondisplay_images')) continue;
           if (item.Key.includes('prompts')) continue;
           if (item.Key.includes('rate')) continue;
           
@@ -98,7 +85,7 @@ const Inference = ({
     if (inferrenceButton) {
       setModelError(false);
       setActivity(true);
-      if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies|naked|nude|shower|bare|toned|attractive|apple)\b/i.test(prompt)) {
+      if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies|naked|nude|shower)\b/i.test(prompt)) {
           const trollImages = [
             require('../assets/troll/troll_1.jpg'),
             require('../assets/troll/ct.png'),
@@ -118,7 +105,7 @@ const Inference = ({
         return;
     }
       let inferreceModel = modelID.value;
-      const ipScaleHolder = getScaledIP(styleSwitch, settingSwitch);
+      
       const controlImage = imageSource[selectedImageIndex];
 
       const AWS = require("aws-sdk");
@@ -127,9 +114,13 @@ const Inference = ({
         accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
         secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
       });
+      
 
+      
       const params = {
-        FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
+        FunctionName: /Gemini|Imagen/i.test(modelID.value)
+      ? process.env.EXPO_PUBLIC_AWS_LAMBDA_GOOGLE_FUNCTION
+      : process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: "RequestResponse",
         Payload: JSON.stringify({
           prompt: prompt,
@@ -137,19 +128,20 @@ const Inference = ({
           guidance: guidance,
           modelID: inferreceModel,
           image: controlImage,
-          target: ipScaleHolder,
+          target: '',
           control: control,
           task: "image",
+          safety: settingSwitch
         }),
       };
-
+      console.log(params);
       lambda
         .invoke(params)
         .promise()
         .then((data) => {
           const jsonHolder = JSON.parse(data.Payload).body;
           const responseData = JSON.parse(jsonHolder);
-          console.log(responseData);
+          
           if (/Model Waking/.test(responseData.output)) {
             setModelMessage("Model Waking");
             setModelError(true);
@@ -174,11 +166,7 @@ const Inference = ({
             );
             setModelError(false);
           }
-          if (responseData.NSFW) {
-            setModelMessage(`NSFW...Image will not be Saved`);
-            setModelError(true);
-          }
-
+          
           setInferrenceButton(false);
           setActivity(false);
           setReturnedPrompt(

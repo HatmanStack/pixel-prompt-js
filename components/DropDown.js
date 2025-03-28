@@ -12,26 +12,33 @@ export default function DropDownComponent({
         {
           label: "SD 3.5 Turbo",
           value: "stabilityai/stable-diffusion-3.5-large-turbo",
-        },   
+        }, 
         {
-          label: "Black Forest Labs",
+          label: "Black Forest Schnell",
+          value: "black-forest-labs/FLUX.1-schnell",
+        },    
+        {
+          label: "SD 3.5 Large",
+          value: "stabilityai/stable-diffusion-3.5-large",
+        }, 
+        
+        {
+          label: "Black Forest Dev",
           value: "black-forest-labs/FLUX.1-dev",
         },   
         {
           label: "AWS Nova Canvas",
           value: "AWS Nova Canvas",
         }, 
+        { label: "Imagen 3.0", value: "Imagen 3.0" },
         {
           label: "OpenAI Dalle3",
           value: "OpenAI Dalle3",
         }, 
-        {
-          label: "SD 3.5 Large",
-          value: "stabilityai/stable-diffusion-3.5-large",
-        }, 
-        { label: "Pixel", value: "nerijs/pixel-art-xl" },
-        { label: "Voxel", value: "Fictiverse/Voxel_XL_Lora" },
-        { label: "Anime - (gsdf)", value: "gsdf/Counterfeit-V2.5" },
+        
+        { label: "Gemini 2.0", value: "Gemini 2.0" },
+        
+       
       ];
       
   return (

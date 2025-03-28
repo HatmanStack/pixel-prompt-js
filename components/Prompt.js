@@ -12,6 +12,7 @@ const PromptInference = ({
   promptLengthValue,
   setActivity,
   setModelError,
+  settingSwitch
 }) => {
   
   useEffect(() => {
@@ -27,16 +28,18 @@ const PromptInference = ({
       }
       
       const AWS = require('aws-sdk');
+      
       const lambda = new AWS.Lambda({
         region: process.env.EXPO_PUBLIC_AWS_REGION,
         accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
         secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
       });
-
+      console.log(settingSwitch);
       const params = {
         FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: 'RequestResponse',
         Payload: JSON.stringify({
+          safety: settingSwitch,
           itemString: alteredPrompt,
           task: "text"
         })

@@ -52,7 +52,7 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
         onValueChange={handleGuidanceChange}
       />
       <Text style={styles.sliderValue}>{guidanceValue}</Text>
-      <Text style={styles.captionText}>Style & Layout</Text>
+      {/*<Text style={styles.captionText}>Style & Layout</Text>
       <Slider
         style={styles.slider}
         minimumValue={0}
@@ -64,7 +64,7 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
         thumbTintColor="#6750A4"
         onValueChange={handleControlChange}
       />
-      <Text style={styles.sliderValue}>{controlValue}</Text>
+      <Text style={styles.sliderValue}>{controlValue}</Text>**/}
     </View>
   );
 }
