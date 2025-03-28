@@ -14,7 +14,7 @@ export default function DropDownComponent({
           value: "stabilityai/stable-diffusion-3.5-large-turbo",
         }, 
         {
-          label: "Black Forest Schnell",
+          label: "Black Forest Schnel",
           value: "black-forest-labs/FLUX.1-schnell",
         },    
         {
