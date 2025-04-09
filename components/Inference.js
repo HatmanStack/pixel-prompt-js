@@ -104,21 +104,16 @@ const Inference = ({
         setInferrenceButton(false);
         return;
     }
-      let inferreceModel = modelID.value;
-      
-      const controlImage = imageSource[selectedImageIndex];
-
+  
       const AWS = require("aws-sdk");
       const lambda = new AWS.Lambda({
         region: process.env.EXPO_PUBLIC_AWS_REGION,
         accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
         secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
       });
-      
-
-      
+    
       const params = {
-        FunctionName: /Gemini|Imagen/i.test(modelID.value)
+        FunctionName: /Gemini|Imagen|Recraft/i.test(modelID.value)
       ? process.env.EXPO_PUBLIC_AWS_LAMBDA_GOOGLE_FUNCTION
       : process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: "RequestResponse",
@@ -126,15 +121,15 @@ const Inference = ({
           prompt: prompt,
           steps: steps,
           guidance: guidance,
-          modelID: inferreceModel,
-          image: controlImage,
+          modelID: modelID.value,
+          image: '',
           target: '',
           control: control,
           task: "image",
           safety: settingSwitch
         }),
       };
-      console.log(params);
+      console.log(params.Payload.Payload);
       lambda
         .invoke(params)
         .promise()

@@ -21,7 +21,10 @@ export default function DropDownComponent({
           label: "SD 3.5 Large",
           value: "stabilityai/stable-diffusion-3.5-large",
         }, 
-        
+        {
+          label: "Recraft v3",
+          value: "Recraft v3",
+        }, 
         {
           label: "Black Forest Dev",
           value: "black-forest-labs/FLUX.1-dev",
