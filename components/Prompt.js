@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import seeds from "../assets/seeds.json";
 
 const PromptInference = ({
-  setFlanPrompt,
   prompt,
   textInference,
   setTextInference,
@@ -57,6 +56,7 @@ const PromptInference = ({
           const jsonHolder = JSON.parse(data.Payload).body;
           const responseData = JSON.parse(jsonHolder);
           const longPrompt = responseData.plain;
+          console.log(longPrompt);
           setLongPrompt(longPrompt);
           setShortPrompt(alteredPrompt);
           if (!promptLengthValue) {

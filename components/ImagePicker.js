@@ -5,7 +5,6 @@ import {
   View,
   StyleSheet,
   Text,
-  Switch,
   FlatList,
   Dimensions,
 } from "react-native";
@@ -149,10 +148,8 @@ const MyImagePicker = ({
   setPlaySound,
   imageSource,
   setImageSource,
-  styleSwitch,
-  setStyleSwitch,
-  settingSwitch,
-  setSettingSwitch,
+ 
+  
 }) => {
   const [textHeight, setTextHeight] = useState(0);
   const [containerHeight, setContainerHeight] = useState(160);
@@ -205,73 +202,12 @@ const MyImagePicker = ({
     }
   }, [selectedImageIndex]);
 
-  const styleSwitchFunction = () => {
-    setStyleSwitch(!styleSwitch);
-    setPlaySound("switch");
-  };
 
-  const settingSwitchFunction = () => {
-    setSettingSwitch(!settingSwitch);
-    setPlaySound("switch");
-  };
+  
 
-  const deleteFromImageArray = (index) => {
-    setImageSource((prevImageSource) => {
-      setPlaySound("click");
-      if (prevImageSource.length > 1) {
-        return prevImageSource.filter((_, i) => i !== index);
-      }
-      return [addImage];
-    });
-    setReturnedPrompt(promptList[index + 1]);
-    setPromptList((prevPromptSource) => {
-      if (prevPromptSource.length > 1) {
-        return prevPromptSource.filter((_, i) => i !== index);
-      }
-      return [""];
-    });
-  };
 
   return (
-    <>{/**<Text style={[styles.promptText,{ width: 500, margin: 20, fontSize: 14}]}>Click Image to Enlarge. If Image is enlarged it will be used as an input image for the next image generated. Use either or both the Style and Layout attributes to affect how the model interprets the input image.</Text>*/}
-      <View style={styles.switchesRowContainer}>
-       {/** <View style={styles.columnContainer}>
-          <Text
-            style={[
-              { color: styleSwitch ? "#9DA58D" : "#FFFFFF" },
-              styles.sliderText,
-            ]}
-          >
-            Style
-          </Text>
-          <Switch
-            trackColor={{ false: "#9DA58D", true: "#767577" }}
-            thumbColor="#B58392"
-            activeThumbColor="#6750A4"
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={styleSwitchFunction}
-            value={styleSwitch}
-          />
-        </View>*/ }
-        <View style={styles.columnContainer}>
-          <Text
-            style={[
-              { color: settingSwitch ? "#9FA8DA" : "#FFFFFF" },
-              styles.sliderText,
-            ]}
-          >
-            Saftey
-          </Text>
-          <Switch
-            trackColor={{ false: "#958DA5", true: "#767577" }}
-            thumbColor="#B58392"
-            activeThumbColor="#6750A4"
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={settingSwitchFunction}
-            value={settingSwitch}
-          />
-        </View>
-      </View>
+    <>     
       <View style={styles.flatListContainer}>
       {imageSource.length > 0 && ( 
       <FlatList
@@ -279,8 +215,8 @@ const MyImagePicker = ({
           key={columnCount}
           numColumns={columnCount}
           keyExtractor={(item, index) => index.toString()}
-          initialNumToRender={1}                    // Reduced initial render
-          maxToRenderPerBatch={1}                   // Reduced batch size
+          initialNumToRender={10}                    // Reduced initial render
+          maxToRenderPerBatch={10}                   // Reduced batch size
           windowSize={8}                            // Add window size
           removeClippedSubviews={true}             // Remove items when off screen
           updateCellsBatchingPeriod={16}           // Add batching period

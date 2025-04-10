@@ -14,13 +14,14 @@ import { useFonts } from "expo-font";
 import SliderComponent from "./components/Slider";
 import PromptInputComponent from "./components/PromptInput";
 import BreathingComponent from "./components/Breathing";
-import DropDownComponent from "./components/DropDown";
+import SafteySwitch from "./components/SafteySwitch";
 import MyImagePicker from "./components/ImagePicker";
 import Buttons from "./components/Buttons";
 import Expand from "./components/Expand";
 import PromptInference from "./components/Prompt";
 import Inference from "./components/Inference";
 import SoundPlayer from "./components/Sounds";
+import NewImage from "./components/NewImage";
 
 const assetImage = require("./assets/avocado.jpg");
 const circleImage = require("./assets/circle.png");
@@ -29,20 +30,16 @@ const rotatedCircle = require("./assets/rotated_circle.png");
 
 export default function App() {
   useFonts({ Sigmar: require("./assets/Sigmar/Sigmar-Regular.ttf") });
-  const [inferredImage, setInferredImage] = useState(assetImage);
+  const [inferredImage, setInferredImage] = useState(Array(9).fill(assetImage));
   const [steps, setSteps] = useState(28);
   const [guidance, setGuidance] = useState(5);
   const [control, setControl] = useState(1.0);
-  const [modelID, setModelID] = useState({
-    label: "SD 3.5 Turbo",
-    value: "stabilityai/stable-diffusion-3.5-large-turbo",
-  });
   const [prompt, setPrompt] = useState("Avocado Armchair");
   const [inferredPrompt, setInferredPrompt] = useState(null);
   const [activity, setActivity] = useState(false);
   const [modelError, setModelError] = useState(false);
-  const [returnedPrompt, setReturnedPrompt] = useState("Avacado Armchair")
-  const [initialReturnedPrompt, setInitialReturnedPrompt] = useState('Avacado Armchair')
+  const [returnedPrompt, setReturnedPrompt] = useState(Array(9).fill("Avacado Armchair"))
+  const [initialReturnedPrompt, setInitialReturnedPrompt] = useState(Array(9).fill("Avacado Armchair"))
   const [textInference, setTextInference] = useState(false);
   const [shortPrompt, setShortPrompt] = useState("");
   const [longPrompt, setLongPrompt] = useState(null);
@@ -51,39 +48,22 @@ export default function App() {
   const [inferrenceButton, setInferrenceButton] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [imageSource, setImageSource] = useState([]);
-  const [settingSwitch, setSettingSwitch] = useState(false);
+  const [settingSwitch, setSettingSwitch] = useState(true);
   const [styleSwitch, setStyleSwitch] = useState(false);
   const [soundIncrement, setSoundIncrement] = useState(null);
   const [makeSound, setMakeSound] = useState([null,0]);
   const [promptList, setPromptList] = useState([]);
-  const [swapImage, setSwapImage] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [columnCount, setColumnCount] = useState(3);
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(Array(9).fill(false));
   const isWindowBiggerThanContainer = Dimensions.get('window').width > 600 ? 500 : "100%"
-  const passModelIDWrapper = (x) => {
-    setModelError(false);
-    setModelID(x);
-  };
+  
 
   const setPlaySound = (sound) => {
     setSoundIncrement(prevSoundIncrement => prevSoundIncrement + 1);
     setMakeSound([sound, soundIncrement]);
   };
-
-  useEffect(() => {
-    if(swapImage){
-    if(inferredImage !== addImage){
-    console.log("swapImage", inferredImage);
-    setPromptList(prevPromptList => [initialReturnedPrompt,...prevPromptList]);
-    setImageSource(prevImageSource => [inferredImage, ...prevImageSource ]);  
-    setInferredImage(addImage);
-    setInitialReturnedPrompt("");
-    setReturnedPrompt('')
-    }
-    setSwapImage(false);
-  }
-  }),[swapImage];
 
   const switchPromptFunction = () => {
     setPromptLengthValue(!promptLengthValue);
@@ -137,7 +117,6 @@ export default function App() {
         inferrenceButton={inferrenceButton}
         setModelMessage={setModelMessage}
         imageSource={imageSource}
-        modelID={modelID}
         prompt={prompt}
         styleSwitch={styleSwitch}
         settingSwitch={settingSwitch}
@@ -149,6 +128,7 @@ export default function App() {
         setReturnedPrompt={setReturnedPrompt}
         setInitialReturnedPrompt={setInitialReturnedPrompt}
         setInferredImage={setInferredImage}
+        setLoadingStatus={setLoadingStatus}
       />
       <BreathingComponent />
       <ScrollView
@@ -159,33 +139,7 @@ export default function App() {
         {Dimensions.get('window').width > 1000 ? (
           <View style={styles.rowContainer}>
             {/* Left column */}
-            {isImagePickerVisible && (
-              <Pressable
-              onPress={() => {
-                setSwapImage(true);
-                setPlaySound("swoosh");
-              }}
-              style={({ pressed }) => [
-                styles.swapButton,
-                {
-                  top: pressed ? Dimensions.get('window').height / 2 - 123 : Dimensions.get('window').height / 2  - 125,
-                  left: pressed ? Dimensions.get('window').width / 2 - 13 : Dimensions.get('window').width / 2 - 15,
-                  width: pressed ? 52 : 60,
-                  height: pressed ? 52 : 60,
-                },
-              ]}
-            >
-              {({ pressed }) => (
-                <Image
-                  source={pressed ? rotatedCircle : circleImage}
-                  style={[
-                    styles.changeButton,
-                    pressed ? { width: 52, height: 52 } : { width: 60, height: 60 },
-                  ]}
-                />
-              )}
-            </Pressable>
-            )}
+            
 
             <View style={styles.leftColumnContainer}>
               <View>
@@ -197,9 +151,10 @@ export default function App() {
               </View>
               
               <View style={[styles.rowContainer, { padding: 0 }]}>
-                <DropDownComponent
+                <SafteySwitch
+                  settingSwitch={settingSwitch}
                   setPlaySound={setPlaySound}
-                  passModelID={passModelIDWrapper}
+                  setSettingSwitch={setSettingSwitch}
                   
                 />
                 <View style={styles.columnContainer}>
@@ -269,19 +224,9 @@ export default function App() {
             
             <View style={styles.rightColumnContainer}>
             <View style={styles.imageCard}>
-              {inferredImage && (
-                <Image
-                  source={
-                    typeof inferredImage === "number"
-                      ? inferredImage
-                      : { uri: inferredImage }
-                  }
-                  style={styles.imageStyle}
-                />
-              )}
-              </View>
-              <Text style={styles.promptText}>{returnedPrompt}</Text>
+              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} />
             </View>
+          </View>
           </View>
         ) : (
           <View style={styles.columnContainer}>
@@ -290,11 +235,12 @@ export default function App() {
               setPrompt={setPrompt}
               inferredPrompt={inferredPrompt}
             />
-            <DropDownComponent
-              setPlaySound={setPlaySound}
-              passModelID={passModelIDWrapper}
-             
-            />
+            <SafteySwitch
+                  settingSwitch={settingSwitch}
+                  setPlaySound={setPlaySound}
+                  setSettingSwitch={setSettingSwitch}
+                  
+                />
             <Buttons
               setPlaySound={setPlaySound}
               setInferrenceButton={setInferrenceButton}
@@ -349,45 +295,13 @@ export default function App() {
                   settingSwitch={settingSwitch}
                   setSettingSwitch={setSettingSwitch}
                 />
-                 <Pressable
-              onPress={() => {
-                setSwapImage(true);
-                setPlaySound("swoosh");
-              }}
-              style={({ pressed }) => [
-                styles.swapButtonColumn,
-                {
-                  
-                  width: pressed ? 52 : 60,
-                  height: pressed ? 52 : 60,
-                },
-              ]}
-            >
-              {({ pressed }) => (
-                <Image
-                  source={pressed ? rotatedCircle : circleImage}
-                  style={[
-                    styles.changeButton,
-                    pressed ? { width: 52, height: 52 } : { width: 60, height: 60 },
-                  ]}
-                />
-              )}
-            </Pressable>
+                
               </>
             )}
             
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} setControl={setControl}/>
             <View style={styles.imageCard}>
-            {inferredImage && (
-              <Image
-                source={
-                  typeof inferredImage === "number"
-                    ? inferredImage
-                    : { uri: inferredImage }
-                }
-                style={styles.imageStyle}
-              />
-            )}
+              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} />
             </View>
             <Text style={styles.promptText}>{returnedPrompt}</Text>
           </View>
@@ -448,34 +362,6 @@ const styles = StyleSheet.create({
     elevation: 3,
     fontFamily: "Sigmar",
   },
-  swapButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    position: "absolute",
-    zIndex: 1,
-    elevation: 3,
-    backgroundColor: colors.buttonBackground,
-  },
-  changeButton: {
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center", // change as needed
-    elevation: 3, // for Android shadow
-    shadowColor: "#000", // for iOS shadow
-    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
-    shadowOpacity: 0.25, // for iOS shadow
-    shadowRadius: 3.84, // for iOS shadow
-  },
-  swapButtonColumn: {
-    width: 60, // adjust size as needed
-    height: 60, // adjust size as needed
-    borderRadius: 30,
-    elevation: 3,
-    margin: 20,
-    backgroundColor: colors.buttonBackground,
-  },
   promptText: {
     color: colors.color,
     fontSize: 18,
@@ -491,16 +377,10 @@ const styles = StyleSheet.create({
     padding: 5,
     
   },
-  imageStyle: {
-    width: 320,
-    height: 440,
-    borderRadius: 18,
-   
-    alignSelf: "center",  
-  },
+ 
   imageCard:{
-    width: 320,
-    height: 440,
+    width: "100%",
+    height: "92%",
     borderRadius: 18,
     marginTop: 20,
     marginBottom: 20,

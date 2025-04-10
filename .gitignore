@@ -6,7 +6,7 @@ app.json
 package-lock.json
 android/
 dist/
-
+assets/images/
 
 # macOS
 .DS_Store
