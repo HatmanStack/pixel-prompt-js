@@ -2,82 +2,76 @@ import React from "react";
 import { StyleSheet, Pressable, Image, Text, View } from "react-native";
 import { Dimensions } from "react-native";
 
-const Expand = ({ setPlaySound, isImagePickerVisible, setImagePickerVisible, setIsGuidanceVisible, isGuidanceVisible, isGuidance }) => {
-
+const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
   const rightImage = require("../assets/right.png");
   const downImage = require("../assets/down.png");
-  
+
   return (
-    <View style={[styles.galleryContainer]}>
-    <Pressable
-      style={[
-        styles.expandButton,
-      ]}
-      onPress={() => {setPlaySound("expand"); {isGuidance ? setIsGuidanceVisible(!isGuidanceVisible): 
-        setImagePickerVisible(!isImagePickerVisible)
-        }}}
-    >
-      {isGuidance ? isGuidanceVisible ? (<Image
-          source={downImage}
-          style={styles.expandImage}
-        />
-      ) : (
-        <Image
-          source={rightImage}
-          style={styles.expandImage}
-        />
-      ): isImagePickerVisible ? (
-        <Image
-          source={downImage}
-          style={styles.expandImage}
-        />
-      ) : (
-        <Image
-          source={rightImage}
-          style={styles.expandImage}
-        />
-      )}
-      
-    </Pressable>
-    <Text style={{fontSize: 24, color: '#ffffff', fontFamily: 'Sigmar', letterSpacing: 5}}>{isGuidance ? "Guidance": "Gallery"}</Text>
+    <View style={styles.expandContainer}>
+      <View style={styles.buttonColumn}>
+        <Pressable
+          style={styles.expandButton}
+          onPress={() => {
+            setPlaySound("expand");
+            toggleVisibility();
+          }}
+        >
+          <Image
+            source={visible ? downImage : rightImage}
+            style={styles.expandImage}
+          />
+        </Pressable>
+      </View>
+      <View style={styles.textColumn}>
+        <Text style={styles.expandText}>
+          {isGuidance ? "Guidance" : "Gallery"}
+        </Text>
+      </View>
+      <View style={styles.ghostColumn}></View>
     </View>
   );
 };
 
-const colors = {
-  buttonBackground: "#3a3c3f",
-};
-
 const styles = StyleSheet.create({
+  expandContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '100%',
+  },
+  buttonColumn: {
+    flex: 2,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingLeft: 5,
+  },
+  textColumn: {
+    flex: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    
+  },
+  ghostColumn: {
+    flex: 2,
+  },
   expandButton: {
-    width: 30, // adjust size as needed
-    height: 30, // adjust size as needed
-    borderRadius: 15, // half of size to make it circular
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.buttonBackground, // change as needed
-    elevation: 3, // for Android shadow
-    shadowColor: "#000", // for iOS shadow
-    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
-    shadowOpacity: 0.25, // for iOS shadow
-    shadowRadius: 3.84, // for iOS shadow
-    marginRight: 30,
-    margin:5
+    backgroundColor: "#3a3c3f",
   },
   expandImage: {
     width: 20,
     height: 20,
-    justifyContent: "center",
-    alignItems: "center",
   },
-  galleryContainer: {
-    flex:1,
-    flexDirection:'row',
-    alignSelf: "flex-start",
-    marginLeft: Dimensions.get('window').width < 1000 ? "20%" : "20%",
-    marginBottom: 10,
-    
-  }
+  expandText: {
+    fontSize: 24,
+    color: '#ffffff',
+    fontFamily: 'Sigmar',
+    letterSpacing: 5,
+  },
 });
 
 export default Expand;

@@ -1,4 +1,4 @@
-import { StyleSheet, Switch, View, Text } from "react-native";
+import { StyleSheet, Switch, View, Text, Dimensions } from "react-native";
 
 
 export default function SafteySwitch({
@@ -6,6 +6,8 @@ export default function SafteySwitch({
   setSettingSwitch,
   setPlaySound
 }) {
+
+  const windowWidth = Dimensions.get('window').width;
   const settingSwitchFunction = () => {
     setSettingSwitch(!settingSwitch);
     setPlaySound("switch");
@@ -15,7 +17,11 @@ export default function SafteySwitch({
   return (
    
            
-            <View style={styles.columnContainer}>
+    <View style={[
+      styles.columnContainer,
+      // Apply conditional right margin based on screen width
+      windowWidth > 1000 ? { marginRight: 100 } : {marginTop: -10}
+    ]}>
             <Switch
       trackColor={{ false: "#958DA5", true: "#767577" }}
       thumbColor="#B58392"
@@ -43,13 +49,7 @@ const colors = {
   color: "#FFFFFF",
 };
 const styles = StyleSheet.create({
-  dropdown: {
-    margin: 16,
-    height: 50,
-    width: 340,
-    borderBottomColor: colors.borderBottomColor,
-    borderBottomWidth: 3,
-  },
+  
   placeholderStyle: {
     color: colors.color,
     fontSize: 25,
@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
   },
   columnContainer: {
     margin: 20,
-    marginRight: 100,
     flex: 1,
     alignItems: "center",
     flexDirection: "column",

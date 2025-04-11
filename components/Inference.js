@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 const AWS = require("aws-sdk"); 
 const placeholderImage = require('../assets/avocado.jpg'); // Or a dedicated loading image asset
 const errorImage = require('../assets/add_image.png');
+const cloudFrontDomain = process.env.EXPO_PUBLIC_CLOUDFRONT_DOMAIN;
 
 const Inference = ({
   setGalleryLoaded,
-  setGalleryLoadingStatus,
   selectedImageIndex,
   setImageSource,
   setInferrenceButton,
@@ -60,96 +60,122 @@ const Inference = ({
         // Extract folder names from CommonPrefixes (S3's way of representing folders)
         const folders = folderData.CommonPrefixes?.map(prefix => prefix.Prefix) || [];
         console.log(`Found ${folders.length} folders:`, folders);
-        setGalleryLoadingStatus(Array(folders.length).fill(true));
-        setImageSource(Array(folders.length).fill(placeholderImage)); // Set placeholder for all images initially
-        const randomImages = [];
-        const folderList = [];
+        
+        // Set initial states ONLY ONCE before we start processing folders
+        
+        setImageSource(Array(folders.length).fill(placeholderImage));
+        
+        // Keep track of folders and images locally
+        const processedFolders = [];
+        const processedImages = [];
         
         // For each folder, get a random image
         for (const folder of folders) {
-          
-          
           // Get all images in this folder
           const folderParams = {
             Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
             Prefix: folder
           };
           
+          
           const imagesData = await s3.listObjectsV2(folderParams).promise();
           
           if (imagesData.Contents && imagesData.Contents.length > 0) {
-            // Filter out non-image files if needed
+            // Filter out non-image files
             const imageKeys = imagesData.Contents
-              .filter(item => !item.Key.endsWith('/')) // Exclude folder markers
+              .filter(item => !item.Key.endsWith('/'))
               .map(item => item.Key);
             
-            if (imageKeys.length < 9) {
-              console.log(`Skipping folder ${folder} - only has ${imageKeys.length} images (minimum 9 required)`);
-              continue; // Skip to next folder
-            }  
-
-           
-              // Select a random image from this folder
-              const randomIndex = Math.floor(Math.random() * imageKeys.length);
-              const randomKey = imageKeys[randomIndex];
-              
-              console.log(`Selected random image: ${randomKey}`);
-              
-              try {
-                // Fetch the selected image data
-                const objectParams = {
-                  Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
-                  Key: randomKey,
-                };
-                
-                const objectData = await s3.getObject(objectParams).promise();
-                const jsonData = JSON.parse(objectData.Body.toString("utf-8"));
-                
-                // Add to our collections
-                randomImages.push(jsonData.base64image);
-                folderList.push(folder);
-                const folderIndex = folders.indexOf(folder);
-                
-                setGalleryLoadingStatus(prevStatus => {
-                  const newStatus = [...prevStatus];
-                  newStatus[folderIndex] = false; 
-                  return newStatus;
-                });
-                
-              } catch (error) {
-                console.error(`Error processing ${randomKey}:`, error);
-                // Add placeholder for failed image
-                randomImages.push(null);
-                
-                // Mark as loaded but with error
-                const folderIndex = folders.indexOf(folder);
-                if (folderIndex !== -1) {
-                  setGalleryLoadingStatus(prevStatus => {
-                    const newStatus = [...prevStatus];
-                    newStatus[folderIndex] = false; // Still mark as loaded, but you can handle error cases differently if needed
-                    return newStatus;
-                  });
-                }
-              
-              } 
+            if (imageKeys.length === 0) continue;
             
+            // Select a random image from this folder
+            const randomIndex = Math.floor(Math.random() * imageKeys.length);
+            const randomKey = imageKeys[randomIndex];
+            
+            console.log(`Selected random image: ${randomKey}`);
+            
+            try {
+              // Fetch the selected image data
+              const objectUrlCF = `${cloudFrontDomain}/${randomKey}`;
+              
+              const response = await fetch(objectUrlCF);
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const objectData = await response.json(); // If you're expecting JSON
+              const jsonData = objectData; 
+              
+              
+              // Convert base64 to Blob URL
+              const base64Data = jsonData.base64image;
+              const base64Clean = base64Data.includes('base64,') 
+                ? base64Data.split('base64,')[1]  
+                : base64Data;
+              
+              const mimeType = 'image/png';
+              const blob = base64ToBlob(base64Clean, mimeType);
+              
+              if (blob) {
+                const objectURL = URL.createObjectURL(blob);
+                
+                // Store this folder and image
+                processedFolders.push(folder);
+                processedImages.push(objectURL);
+                
+                // Find the correct folder index
+                const folderIndex = folders.indexOf(folder);
+                
+                // IMPORTANT: Only update the specific folder's loading state and image
+                // Without touching the loading states of other folders
+                if (folderIndex !== -1) {
+                  setImageSource(prevImages => {
+                    const newImages = [...prevImages];
+                    newImages[folderIndex] = objectURL;
+                    return newImages;
+                  });
+                  
+                  
+                }
+              } else {
+                // Handle blob creation error
+                console.error(`Error creating blob for ${randomKey}`);
+                
+                // Still store the folder but with placeholder image
+                processedFolders.push(folder);
+                processedImages.push(placeholderImage);
+                
+                const folderIndex = folders.indexOf(folder);
+                
+              }
+            } catch (error) {
+              console.error(`Error processing ${randomKey}:`, error);
+              
+              // Still keep track of this folder with a placeholder
+              processedFolders.push(folder);
+              processedImages.push(placeholderImage);
+              
+              const folderIndex = folders.indexOf(folder);
+             
+            }
           }
         }
         
-        
-        // Update app state with our random selections
-        if (randomImages.length > 0) {
-          console.log(`Setting ${randomImages.length} random images`);
-          setImageSource(randomImages);
+        // After all folders are processed
+        if (processedFolders.length > 0) {
+          console.log(`Processed ${processedFolders.length} folders`);
+          setFolderList(processedFolders);
           
-          setFolderList(folderList);
+          // Mark any remaining folders as not loading
+         
         }
         
       } catch (error) {
         console.error("Error fetching images from S3:", error);
+        // Handle overall error - set all loading states to false
+        
       }
     };
-
+  
     fetchGalleryImages();
   }, []);
 
@@ -185,13 +211,15 @@ const Inference = ({
          
           
           try {
-            const objectParams = {
-              Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
-              Key: item.Key,
-            };
-          
-            const objectData = await s3.getObject(objectParams).promise();
-            const jsonData = JSON.parse(objectData.Body.toString("utf-8"));
+            const objectUrlCF = `${cloudFrontDomain}/${item.Key}`;
+            
+            const response = await fetch(objectUrlCF);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const objectData = await response.json(); // If you're expecting JSON
+            const jsonData = objectData; 
+            
           
             const base64Data = jsonData.base64image;
             const base64Clean = base64Data.includes('base64,') 
@@ -201,15 +229,16 @@ const Inference = ({
             
             // Find the correct model index based on the prompt content
             let modelIndex = 0; // Default to first position if no match found
-            modelPlace =["stabilityai/stable-diffusion-3.5-large-turbo" ,
-              "black-forest-labs/FLUX.1-schnell" ,
-              "stabilityai/stable-diffusion-3.5-large" ,
+            modelPlace =["Stable Diffusion 3.5 Turbo" ,
+              "Black Forest Schnell" ,
+              "Stable Diffusion 3.5 Large" ,
              "Recraft v3", 
-               "black-forest-labs/FLUX.1-dev" ,
+               "Black Forest Developer" ,
                "AWS Nova Canvas" ,
              "Imagen 3.0" ,
             "OpenAI Dalle3" ,
               "Gemini 2.0" ]
+              
             
             // Check which model this prompt belongs to
             
@@ -271,6 +300,29 @@ const Inference = ({
             continue;
           }
         }
+        setLoadingStatus(prevStatus => {
+          const newStatus = [...prevStatus];
+          newStatus[selectedImageIndex] = false; // Mark this index as not loading
+          return newStatus;
+        });
+        setLoadingStatus(Array(models.length).fill(false)); // Set all loading states to false
+
+        // Set prompts for any images that are still placeholders
+        setInferredImage(prevImages => {
+          const newImages = [...prevImages];
+          newImages.forEach((image, index) => {
+            // If the image is still the placeholder image
+            if (image === placeholderImage) {
+              setReturnedPrompt(prevPrompts => {
+                const newPrompts = [...prevPrompts];
+                // Set the prompt to indicate which model had no image
+                newPrompts[index] = `No image found for model: ${modelPlace[index]}`;
+                return newPrompts;
+              });
+            }
+          });
+          return newImages;
+        });
         setGalleryLoaded(true); // Set gallery loaded to true after processing all images
         setActivity(false); // Reset activity state
       }
@@ -295,8 +347,23 @@ const Inference = ({
     }
 }
 
+  const getClientIP = async () => {
+    try {
+      
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      
+      return data.ip;
+    } catch (error) {
+      console.error('Error getting IP:', error);
+      return 'unknown-ip';
+    }
+  };
+
   useEffect(() => {
+    const processModels = async () => {
     if (inferrenceButton) {
+      
       setModelError(false);
       setModelMessage(""); // Clear previous messages
 
@@ -351,7 +418,8 @@ const Inference = ({
         second: '2-digit',
         hour12: false
       }).replace(/[/:,\s]/g, '-');
-
+      const clientIP = await getClientIP();
+      
       // --- Process each model ---
       models.forEach((model, index) => {
         const isGoogleModel = /Gemini|Imagen|Recraft/i.test(model.value);
@@ -367,16 +435,15 @@ const Inference = ({
             steps: steps,
             guidance: guidance,
             modelID: model.value,
-            image: '', // Pass image data if using image-to-image features
-            target: time, // Pass target data if needed
+            ip: clientIP, 
+            target: time, 
             control: control,
             task: "image", // Ensure lambda handles this task type
             safety: settingSwitch
           }),
         };
 
-        console.log(`Invoking model ${index + 1}/${models.length}: ${model.label}`);
-
+       
         lambda.invoke(params).promise()
           .then((data) => {
             let currentImageResult = errorImage; // Default to error image
@@ -493,6 +560,11 @@ const Inference = ({
           });
       }); // End models.forEach
     }
+      // Start processing models
+    
+  }
+  processModels(); 
+   // Call the function to start processing
   }, [inferrenceButton]); // End useEffect for Inference Logic
 
   // Return null or some minimal JSX as this is a logic component

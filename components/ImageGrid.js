@@ -5,22 +5,24 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Dimensions,
-  ActivityIndicator, // Import ActivityIndicator
+  Dimensions, 
   Text, // Import Text for the placeholder
 } from "react-native";
 
 // Define a standard size for grid items
 const ITEM_MARGIN = 5;
-const calculateItemSize = (columns) => {
-  const screenWidth = Dimensions.get('window').width;
-  return Math.floor((screenWidth - (columns + 1) * ITEM_MARGIN * 2) / columns);
+const calculateItemSize = (columns, containerWidth) => {
+  // Use provided containerWidth or window width
+  const screenWidth = containerWidth || Dimensions.get('window').width;
+  // Calculate available width accounting for margins
+  const availableWidth = screenWidth - ((columns + 1) * ITEM_MARGIN * 2);
+  return Math.floor(availableWidth / columns);
 };
 
 
 // --- Simplified Grid Item Component ---
 // Memoized for performance
-const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, isLoading, onLoadCallback }) => {
+const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, onLoadCallback }) => {
   const itemStyle = [
     styles.gridItem,
     { width: itemSize, height: itemSize, margin: ITEM_MARGIN },
@@ -37,12 +39,8 @@ const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, isL
                 resizeMode="cover"
                 onLoad={() => onLoadCallback(index)} // Notify parent when image loads
             />
-            {/* Show loader if it's loading */}
-            {isLoading && (
-                <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
-                </View>
-            )}
+           
+            
        </View>
     </Pressable>
   );
@@ -55,7 +53,7 @@ const ImageGrid = ({
   setSelectedImageIndex,
   selectedImageIndex,
   setPlaySound,
-  galleryLoadingStatus, // External loading status (e.g., from server/generation)
+  containerWidth,// External loading status (e.g., from server/generation)
 }) => {
 
   // State to track if each individual image has loaded its source
@@ -63,7 +61,7 @@ const ImageGrid = ({
   const [imageLoadedStatus, setImageLoadedStatus] = useState({});
 
   // Calculate item size based on current column count
-  const itemSize = calculateItemSize(columnCount);
+  const itemSize = calculateItemSize(columnCount, containerWidth);
 
   // Reset local loaded status when the source array changes fundamentally
   useEffect(() => {
@@ -92,9 +90,7 @@ const ImageGrid = ({
   // Render function for each item in the FlatList
   const renderItem = useCallback(({ item: source, index }) => {
      // Determine if the loader should be shown for this item
-     const isExternallyLoading = galleryLoadingStatus && galleryLoadingStatus[index];
-     const isInternallyLoading = !imageLoadedStatus[index]; // True if not yet loaded locally
-     const isLoading = isExternallyLoading || isInternallyLoading;
+     
 
     return (
         <GridItem
@@ -103,28 +99,31 @@ const ImageGrid = ({
             onPress={onImagePress}
             isSelected={index === selectedImageIndex}
             itemSize={itemSize}
-            isLoading={isLoading} // Pass loading status down
+             // Pass loading status down
             onLoadCallback={handleImageLoaded} // Pass the loading callback down
         />
     );
   // Add dependencies for useCallback to ensure it updates correctly
-  }, [columnCount, selectedImageIndex, galleryLoadingStatus, imageLoadedStatus, itemSize, onImagePress, handleImageLoaded]);
+  }, [columnCount, selectedImageIndex,  imageLoadedStatus, itemSize, onImagePress, handleImageLoaded]);
 
-
+  const isEmpty = !imageSource || imageSource.length === 0;
   return (
     <View style={styles.gridContainer}>
-      {imageSource && imageSource.length > 0 ? (
+      {!isEmpty ? (
         <FlatList
           data={imageSource}
           renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item, index) => `image-${index}`}
           numColumns={columnCount}
-          key={columnCount.toString()}
-          initialNumToRender={columnCount * 5}
-          maxToRenderPerBatch={columnCount * 3}
-          windowSize={10}
-          removeClippedSubviews={true}
-          // contentContainerStyle={styles.flatListContentContainer}
+          key={`grid-${columnCount}`}
+          initialNumToRender={12}
+          maxToRenderPerBatch={12}
+          windowSize={21}
+          removeClippedSubviews={false}
+          showsVerticalScrollIndicator={true}
+          style={[styles.flatList, { width: containerWidth || '100%' }]}
+          contentContainerStyle={styles.flatListContent}
+          columnWrapperStyle={styles.columnWrapper} // Add this
         />
       ) : (
         <Text style={styles.noImagesText}>No images to display.</Text>
@@ -137,13 +136,24 @@ const ImageGrid = ({
 const colors = {
   backgroundColor: "#25292e",
   white: "#FFFFFF",
-  highlightBorder: "#007AFF",
+  highlightBorder: "#B58392",
 };
 
 const styles = StyleSheet.create({
   gridContainer: {
-    flex: 1,
     width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flatList: {
+    width: '100%',
+  },
+  emptyContainer: {
+    minHeight: 150, // Adjust this value to your preferred empty/loading height
+    justifyContent: 'center', // Center the placeholder content
+    alignItems: 'center',
+    // Add a background or border here for debugging if needed
+    // backgroundColor: 'rgba(255,0,0,0.2)',
   },
   gridItem: {
     backgroundColor: "#555", // Darker placeholder background while loading
@@ -184,6 +194,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
+  },
+  flatListContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  columnWrapper: {
+    justifyContent: 'center', // This centers items in each row
+    marginVertical: 5,
   },
 });
 

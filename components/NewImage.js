@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator } from 'react-native';
+import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator, Dimensions } from 'react-native';
 
 const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton, galleryLoaded}) => {
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState(null);
   const [imageLoadedStatus, setImageLoadedStatus] = useState(Array(9).fill(true));
+  
+  // Get window dimensions
+  const windowWidth = Dimensions.get('window').width;
+  const isSmallScreen = windowWidth < 1000;
   
   // Create animated values for each potential image
   const animatedValues = useMemo(() => 
@@ -35,10 +39,15 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   };
   // Animation function to expand/collapse images
   const handleImagePress = (index) => {
-    if (Array.isArray(returnedPrompt)) {
+    // Only set the current prompt when actually expanding an image
+    if (expandedImageIndex !== index) {
+      if (Array.isArray(returnedPrompt)) {
         setCurrentPrompt(returnedPrompt[index]);
       }
+    }
+    
     setPlaySound("click");
+    
     if (expandedImageIndex === index) {
       // Collapse this image
       Animated.timing(animatedValues[index], {
@@ -48,6 +57,7 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
       }).start();
       
       setExpandedImageIndex(null);
+      setCurrentPrompt(null); // Clear the prompt when collapsing
     } else {
       // If another image is expanded, collapse it first
       if (expandedImageIndex !== null) {
@@ -87,7 +97,10 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
     
     return (
       <>
-        <View style={styles.expandedContainer}>
+        <View style={[
+          styles.expandedContainer,
+          isSmallScreen && styles.expandedContainerSmall
+        ]}>
           <Pressable 
             style={({pressed}) => [
               styles.expandedImageContainer,
@@ -106,8 +119,15 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
             />
           </Pressable>
         </View>
-        <View style={styles.promptTextContainer}>
-          <Text style={styles.promptText} >
+        <View style={[
+          styles.promptTextContainer,
+          isSmallScreen && styles.promptTextContainerSmall
+        ]}>
+          <Text 
+            style={styles.promptText}
+            numberOfLines={isSmallScreen ? 4 : null}
+            ellipsizeMode="tail"
+          >
             {currentPrompt}
           </Text>
         </View>
@@ -117,12 +137,16 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   
   // Otherwise show the grid
   return (
-    <View style={styles.imageGrid}>
+    <View style={[
+      styles.imageGrid, 
+      isSmallScreen && { height: '33%' }
+    ]}>
       {inferredImage.map((image, index) => (
         <Pressable 
           key={index} 
           style={({pressed}) => [
             styles.gridItem,
+            isSmallScreen && styles.gridItemSmall,
             pressed && { opacity: 0.8 }
           ]}
           onPress={() => handleImagePress(index)}
@@ -142,10 +166,23 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
             {/* Show loader if the server is still loading or if the image is not yet rendered */}
             {(loadingStatus && loadingStatus[index] === true || !imageLoadedStatus[index]) && (
               <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
+                <ActivityIndicator size="large" color="#B58392" />
               </View>
             )}
           </View>
+          
+          {/* Only show prompt text if this is expanded and we're on a small screen */}
+          {isSmallScreen && expandedImageIndex === index && Array.isArray(returnedPrompt) && returnedPrompt[index] && (
+            <View style={styles.inlinePromptContainer}>
+              <Text 
+                style={styles.inlinePromptText}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {returnedPrompt[index]}
+              </Text>
+            </View>
+          )}
         </Pressable>
       ))}
     </View>
@@ -234,6 +271,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
    
+  },
+  gridItemSmall: {
+    height: '33vh',
+  },
+  
+  // Add responsive styles for expanded view on small screens
+  expandedContainerSmall: {
+    height: '60vh', // Use less height on small screens
+  },
+  
+  promptTextContainerSmall: {
+    maxHeight: '20vh', // Limit the text height on small screens
+    overflow: 'hidden',
   },
   expandedImage: {
     width: '100%',

@@ -4,9 +4,8 @@ import {
   View,
   ScrollView,
   Text,
-  Pressable,
-  Image,
-  Dimensions
+  Dimensions,
+  Image
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
@@ -24,9 +23,6 @@ import SoundPlayer from "./components/Sounds";
 import NewImage from "./components/NewImage";
 
 const assetImage = require("./assets/avocado.jpg");
-const circleImage = require("./assets/circle.png");
-//const addImage = require("./assets/add_image.png");
-const rotatedCircle = require("./assets/rotated_circle.png");
 
 export default function App() {
   useFonts({ Sigmar: require("./assets/Sigmar/Sigmar-Regular.ttf") });
@@ -120,7 +116,7 @@ export default function App() {
         settingSwitch={settingSwitch}
         control={control}
         guidance={guidance}
-        setGalleryLoadingStatus={setGalleryLoadingStatus}
+  
         steps={steps}
         setActivity={setActivity}
         setModelError={setModelError}
@@ -174,37 +170,39 @@ export default function App() {
               </View>
 
               <Expand
-              setPlaySound={setPlaySound}
-              isImagePickerVisible={isImagePickerVisible}
-              setImagePickerVisible={setImagePickerVisible}
-              isGuidanceVisible={isGuidanceVisible}
-              setIsGuidanceVisible={setIsGuidanceVisible}
-              isGuidance={true}
-            />
-            {isGuidanceVisible && <Text style={[styles.promptText,{ width: isWindowBiggerThanContainer, margin: 20, fontSize: 14}]}>
-              The prompt button returns two different prompts; a seed prompt, descriptive prompt.
-              If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt.
-              To generate fresh prompts clear the input window.  </Text>}
+                  setPlaySound={setPlaySound}
+                  isGuidance={true}
+                  visible={isGuidanceVisible}
+                  toggleVisibility={() => setIsGuidanceVisible(!isGuidanceVisible)}
+                />
+                {isGuidanceVisible && (
+                  <Text style={[styles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
+                    The prompt button returns two different prompts; a seed prompt, descriptive prompt. If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt. To generate fresh prompts clear the input window.
+                  </Text>
+                )}
+
                 <Expand
                   setPlaySound={setPlaySound}
-                  isImagePickerVisible={isImagePickerVisible}
-                  setImagePickerVisible={setImagePickerVisible}
-                  isGuidanceVisible={isGuidanceVisible}
-                  setIsGuidanceVisible={setIsGuidanceVisible}
                   isGuidance={false}
+                  visible={isImagePickerVisible}
+                  toggleVisibility={() => setImagePickerVisible(!isImagePickerVisible)}
                 />
                 {isImagePickerVisible && (
-                  <ImageGrid
-                  imageSource={imageSource}
-                  columnCount={columnCount}
-                  galleryLoaded={galleryLoaded}
-                  setSelectedImageIndex={setSelectedImageIndex}
-                  selectedImageIndex={selectedImageIndex}
-                  setPlaySound={setPlaySound}
-                  galleryLoadingStatus={galleryLoadingStatus}
-                    
-                  />
-                )}
+  <View style={styles.imageGridContainer}>
+    <ImageGrid
+      imageSource={imageSource}
+      columnCount={columnCount}
+      galleryLoaded={galleryLoaded}
+      setSelectedImageIndex={setSelectedImageIndex}
+      selectedImageIndex={selectedImageIndex}
+      setPlaySound={setPlaySound}
+      
+      containerWidth={isWindowBiggerThanContainer === "100%" ? 
+        Dimensions.get('window').width - 40 : // Full width minus padding
+        isWindowBiggerThanContainer} // Use your existing width variable
+    />
+  </View>
+)}
                 <SliderComponent
                   setSteps={setSteps}
                   setGuidance={setGuidance}
@@ -226,12 +224,7 @@ export default function App() {
               setPrompt={setPrompt}
               inferredPrompt={inferredPrompt}
             />
-            <SafteySwitch
-                  settingSwitch={settingSwitch}
-                  setPlaySound={setPlaySound}
-                  setSettingSwitch={setSettingSwitch}
-                  
-                />
+            
             <Buttons
               setPlaySound={setPlaySound}
               setInferrenceButton={setInferrenceButton}
@@ -241,52 +234,55 @@ export default function App() {
               switchPromptFunction={switchPromptFunction}
               promptLengthValue={promptLengthValue}
             />
+            
+           
             {modelError ? (
               <Text style={styles.promptText}>{modelMessage}</Text>
+              
             ) : (
               <></>
             )}
-            <Expand
-              setPlaySound={setPlaySound}
-              isImagePickerVisible={isImagePickerVisible}
-              setImagePickerVisible={setImagePickerVisible}
-              isGuidanceVisible={isGuidanceVisible}
-              setIsGuidanceVisible={setIsGuidanceVisible}
-              isGuidance={true}
-            />
-            {isGuidanceVisible && <Text style={[styles.promptText,{ width: isWindowBiggerThanContainer, margin: 20, fontSize: 14}]}>
-              Select a model from the drop down menu or by default receive a Random model. 
-              The prompt button returns three different prompts; a seed prompt, descriptive prompt and magic prompt.
-              If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt.
-              To generate fresh prompts clear the input window. The sliders dictate the strength of each attribute.</Text>}
-            <Expand
-              setPlaySound={setPlaySound}
-              isImagePickerVisible={isImagePickerVisible}
-              setImagePickerVisible={setImagePickerVisible}
-              isGuidanceVisible={isGuidanceVisible}
-              setIsGuidanceVisible={setIsGuidanceVisible}
-              isGuidance={false}
-            />
-            
-            {isImagePickerVisible && (
-              <>
-                <ImageGrid
-                   imageSource={imageSource}
-                   columnCount={columnCount}
-                   setSelectedImageIndex={setSelectedImageIndex}
-                   selectedImageIndex={selectedImageIndex}
-                   setPlaySound={setPlaySound}
-                   galleryLoadingStatus={galleryLoadingStatus}
+            <Expand 
+                  setPlaySound={setPlaySound}
+                  isGuidance={true}
+                  visible={isGuidanceVisible}
+                  toggleVisibility={() => setIsGuidanceVisible(!isGuidanceVisible)}
                 />
-                
-              </>
-            )}
+                {isGuidanceVisible && (
+                  
+                  <Text style={[styles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
+                    The prompt button returns two different prompts; a seed prompt, descriptive prompt. If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt. To generate fresh prompts clear the input window.
+                  </Text>
+                  
+                )}
+
+                <Expand
+                  setPlaySound={setPlaySound}
+                  isGuidance={false}
+                  visible={isImagePickerVisible}
+                  toggleVisibility={() => setImagePickerVisible(!isImagePickerVisible)}
+                />
+                {isImagePickerVisible && (
+  <View style={styles.imageGridContainer}>
+    <ImageGrid
+      imageSource={imageSource}
+      columnCount={columnCount}
+      galleryLoaded={galleryLoaded}
+      setSelectedImageIndex={setSelectedImageIndex}
+      selectedImageIndex={selectedImageIndex}
+      setPlaySound={setPlaySound}
+      
+      containerWidth={isWindowBiggerThanContainer === "100%" ? 
+        Dimensions.get('window').width - 40 : // Full width minus padding
+        isWindowBiggerThanContainer} // Use your existing width variable
+    />
+  </View>
+)}
             
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} setControl={setControl}/>
-            <View style={styles.imageCard}>
+            <View style={[styles.imageCard, { height: '33%' }]}>
               <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
             </View>
-            <Text style={styles.promptText}>{returnedPrompt}</Text>
           </View>
         )}
       </ScrollView>
@@ -333,6 +329,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     marginLeft: 10,
   },
+  smallScreenButtonContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+  },
   columnContainer: {
     flex: 1,
     alignItems: "center",
@@ -359,6 +361,13 @@ const styles = StyleSheet.create({
     marginTop: 50,
     padding: 5,
     
+  },
+  imageGridContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    minHeight: 200, // Give it a minimum height
   },
  
   imageCard:{

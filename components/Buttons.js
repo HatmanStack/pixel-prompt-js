@@ -38,7 +38,7 @@ const Buttons = ({
               <View style={[styles.rowContainer]}>
                 <Pressable
                   onPress={() => {
-                    console.log('clicked');
+                    
                     setTextInference(true);
                     setPlaySound("click");
                   }}
