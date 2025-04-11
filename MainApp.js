@@ -15,7 +15,7 @@ import SliderComponent from "./components/Slider";
 import PromptInputComponent from "./components/PromptInput";
 import BreathingComponent from "./components/Breathing";
 import SafteySwitch from "./components/SafteySwitch";
-import MyImagePicker from "./components/ImagePicker";
+import ImageGrid from "./components/ImageGrid";
 import Buttons from "./components/Buttons";
 import Expand from "./components/Expand";
 import PromptInference from "./components/Prompt";
@@ -34,12 +34,12 @@ export default function App() {
   const [steps, setSteps] = useState(28);
   const [guidance, setGuidance] = useState(5);
   const [control, setControl] = useState(1.0);
+  const [galleryLoaded, setGalleryLoaded] = useState(true);
   const [prompt, setPrompt] = useState("Avocado Armchair");
   const [inferredPrompt, setInferredPrompt] = useState(null);
   const [activity, setActivity] = useState(false);
   const [modelError, setModelError] = useState(false);
   const [returnedPrompt, setReturnedPrompt] = useState(Array(9).fill("Avacado Armchair"))
-  const [initialReturnedPrompt, setInitialReturnedPrompt] = useState(Array(9).fill("Avacado Armchair"))
   const [textInference, setTextInference] = useState(false);
   const [shortPrompt, setShortPrompt] = useState("");
   const [longPrompt, setLongPrompt] = useState(null);
@@ -49,10 +49,9 @@ export default function App() {
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [imageSource, setImageSource] = useState([]);
   const [settingSwitch, setSettingSwitch] = useState(true);
-  const [styleSwitch, setStyleSwitch] = useState(false);
   const [soundIncrement, setSoundIncrement] = useState(null);
   const [makeSound, setMakeSound] = useState([null,0]);
-  const [promptList, setPromptList] = useState([]);
+  const [galleryLoadingStatus, setGalleryLoadingStatus] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [columnCount, setColumnCount] = useState(3);
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
@@ -110,23 +109,22 @@ export default function App() {
         settingSwitch={settingSwitch}
       />
       <Inference
+      setGalleryLoaded={setGalleryLoaded}
         setImageSource={setImageSource}
-        setPromptList={setPromptList}
         selectedImageIndex={selectedImageIndex}
         setInferrenceButton={setInferrenceButton}
         inferrenceButton={inferrenceButton}
         setModelMessage={setModelMessage}
         imageSource={imageSource}
         prompt={prompt}
-        styleSwitch={styleSwitch}
         settingSwitch={settingSwitch}
         control={control}
         guidance={guidance}
+        setGalleryLoadingStatus={setGalleryLoadingStatus}
         steps={steps}
         setActivity={setActivity}
         setModelError={setModelError}
         setReturnedPrompt={setReturnedPrompt}
-        setInitialReturnedPrompt={setInitialReturnedPrompt}
         setInferredImage={setInferredImage}
         setLoadingStatus={setLoadingStatus}
       />
@@ -184,10 +182,9 @@ export default function App() {
               isGuidance={true}
             />
             {isGuidanceVisible && <Text style={[styles.promptText,{ width: isWindowBiggerThanContainer, margin: 20, fontSize: 14}]}>
-              Select a model from the drop down menu. 
               The prompt button returns two different prompts; a seed prompt, descriptive prompt.
               If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt.
-              To generate fresh prompts clear the input window. To save images to the app the Saftey Option must be enabled. </Text>}
+              To generate fresh prompts clear the input window.  </Text>}
                 <Expand
                   setPlaySound={setPlaySound}
                   isImagePickerVisible={isImagePickerVisible}
@@ -197,21 +194,15 @@ export default function App() {
                   isGuidance={false}
                 />
                 {isImagePickerVisible && (
-                  <MyImagePicker
-                    columnCount={columnCount}
-                    selectedImageIndex={selectedImageIndex}
-                    setSelectedImageIndex={setSelectedImageIndex}
-                    initialReturnedPrompt={initialReturnedPrompt}
-                    setReturnedPrompt={setReturnedPrompt}
-                    promptList={promptList}
-                    setPromptList={setPromptList}
-                    setPlaySound={setPlaySound}
-                    imageSource={imageSource}
-                    setImageSource={setImageSource}
-                    styleSwitch={styleSwitch}
-                    setStyleSwitch={setStyleSwitch}
-                    settingSwitch={settingSwitch}
-                    setSettingSwitch={setSettingSwitch}
+                  <ImageGrid
+                  imageSource={imageSource}
+                  columnCount={columnCount}
+                  galleryLoaded={galleryLoaded}
+                  setSelectedImageIndex={setSelectedImageIndex}
+                  selectedImageIndex={selectedImageIndex}
+                  setPlaySound={setPlaySound}
+                  galleryLoadingStatus={galleryLoadingStatus}
+                    
                   />
                 )}
                 <SliderComponent
@@ -224,7 +215,7 @@ export default function App() {
             
             <View style={styles.rightColumnContainer}>
             <View style={styles.imageCard}>
-              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} />
+              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
             </View>
           </View>
           </View>
@@ -279,21 +270,13 @@ export default function App() {
             
             {isImagePickerVisible && (
               <>
-                <MyImagePicker
-                  columnCount={columnCount}
-                  selectedImageIndex={selectedImageIndex}
-                  setSelectedImageIndex={setSelectedImageIndex}
-                  initialReturnedPrompt={initialReturnedPrompt}
-                  setReturnedPrompt={setReturnedPrompt}
-                  promptList={promptList}
-                  setPromptList={setPromptList}
-                  setPlaySound={setPlaySound}
-                  imageSource={imageSource}
-                  setImageSource={setImageSource}
-                  styleSwitch={styleSwitch}
-                  setStyleSwitch={setStyleSwitch}
-                  settingSwitch={settingSwitch}
-                  setSettingSwitch={setSettingSwitch}
+                <ImageGrid
+                   imageSource={imageSource}
+                   columnCount={columnCount}
+                   setSelectedImageIndex={setSelectedImageIndex}
+                   selectedImageIndex={selectedImageIndex}
+                   setPlaySound={setPlaySound}
+                   galleryLoadingStatus={galleryLoadingStatus}
                 />
                 
               </>
@@ -301,7 +284,7 @@ export default function App() {
             
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} setControl={setControl}/>
             <View style={styles.imageCard}>
-              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} />
+              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
             </View>
             <Text style={styles.promptText}>{returnedPrompt}</Text>
           </View>

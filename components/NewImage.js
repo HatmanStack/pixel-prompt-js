@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator } from 'react-native';
 
-const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton}) => {
+const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton, galleryLoaded}) => {
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState(null);
   const [imageLoadedStatus, setImageLoadedStatus] = useState(Array(9).fill(true));
@@ -20,7 +20,7 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
 
     // Return a cleanup function that runs when the component unmounts
     // or BEFORE the effect runs again (due to inferredImage changing)
-    if(!inferrenceButton) {
+    if(!inferrenceButton && galleryLoaded) {
       return () => {
           // console.log("Cleaning up object URLs:", currentUrls);
           currentUrls.forEach(url => URL.revokeObjectURL(url));
@@ -35,8 +35,6 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   };
   // Animation function to expand/collapse images
   const handleImagePress = (index) => {
-    
-    
     if (Array.isArray(returnedPrompt)) {
         setCurrentPrompt(returnedPrompt[index]);
       }
