@@ -102,6 +102,7 @@ export default function App() {
         promptLengthValue={promptLengthValue}
         setActivity={setActivity}
         setModelError={setModelError}
+        setModelMessage={setModelMessage}
         settingSwitch={settingSwitch}
       />
       <Inference
@@ -161,14 +162,15 @@ export default function App() {
                     switchPromptFunction={switchPromptFunction}
                     promptLengthValue={promptLengthValue}
                   />
-                  {modelError ? (
+                  
+                </View>
+                
+              </View>
+              {modelError ? (
                     <Text style={styles.promptText}>{modelMessage}</Text>
                   ) : (
                     <></>
                   )}
-                </View>
-              </View>
-
               <Expand
                   setPlaySound={setPlaySound}
                   isGuidance={true}

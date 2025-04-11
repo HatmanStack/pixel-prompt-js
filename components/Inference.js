@@ -96,7 +96,7 @@ const Inference = ({
             
             try {
               // Fetch the selected image data
-              const objectUrlCF = `${cloudFrontDomain}/${randomKey}`;
+              const objectUrlCF = `https://${cloudFrontDomain}/${randomKey}`;
               
               const response = await fetch(objectUrlCF);
               if (!response.ok) {
@@ -211,7 +211,7 @@ const Inference = ({
          
           
           try {
-            const objectUrlCF = `${cloudFrontDomain}/${item.Key}`;
+            const objectUrlCF = `https://${cloudFrontDomain}/${item.Key}`;
             
             const response = await fetch(objectUrlCF);
             if (!response.ok) {
@@ -452,8 +452,14 @@ const Inference = ({
             try {
               const jsonHolder = JSON.parse(data.Payload).body;
               const responseData = JSON.parse(jsonHolder);
-
-              // Basic validation of response
+              if (responseData.output && responseData.output === 'Rate limit exceeded') {
+                setModelError(true);
+                setModelMessage('Rate limit exceeded. Please try again later.');
+                setActivity(false);
+                setLoadingStatus(Array(models.length).fill(false));
+                // Return early since we can't proceed with this model
+                return;
+              }
               if (responseData && responseData.output) {
                 currentImageResult = responseData.output;
                 // Decide which prompt to display: original user prompt or model-specific output?

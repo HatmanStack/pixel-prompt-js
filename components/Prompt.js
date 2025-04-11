@@ -11,6 +11,7 @@ const PromptInference = ({
   promptLengthValue,
   setActivity,
   setModelError,
+  setModelMessage,
   settingSwitch
 }) => {
   
@@ -55,9 +56,18 @@ const PromptInference = ({
         
         try {
           const jsonHolder = JSON.parse(data.Payload).body;
-          const responseData = JSON.parse(jsonHolder);
-          const longPrompt = responseData.plain;
           
+          
+          const responseData = JSON.parse(jsonHolder);
+          if (responseData.output && responseData.output === 'Rate limit exceeded') {
+            setModelError(true);
+            setModelMessage('Rate limit exceeded. Please try again later.');
+            setActivity(false);
+            // Return early since we can't proceed with this model
+            return;
+          }
+          const longPrompt = responseData.plain;
+          console.log(longPrompt);
           setLongPrompt(longPrompt);
           setShortPrompt(alteredPrompt);
           if (!promptLengthValue) {
