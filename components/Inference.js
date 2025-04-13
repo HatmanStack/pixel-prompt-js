@@ -62,12 +62,8 @@ const Inference = ({
         console.log(`Found ${folders.length} folders:`, folders);
         
         // Set initial states ONLY ONCE before we start processing folders
-        
+        setFolderList(Array(folders.length).fill('Holder-Image/'));
         setImageSource(Array(folders.length).fill(placeholderImage));
-        
-        // Keep track of folders and images locally
-        const processedFolders = [];
-        const processedImages = [];
         
         // For each folder, get a random image
         for (const folder of folders) {
@@ -118,55 +114,40 @@ const Inference = ({
               if (blob) {
                 const objectURL = URL.createObjectURL(blob);
                 
-                // Store this folder and image
-                processedFolders.push(folder);
-                processedImages.push(objectURL);
-                
                 // Find the correct folder index
                 const folderIndex = folders.indexOf(folder);
                 
                 // IMPORTANT: Only update the specific folder's loading state and image
                 // Without touching the loading states of other folders
+                
                 if (folderIndex !== -1) {
                   setImageSource(prevImages => {
                     const newImages = [...prevImages];
                     newImages[folderIndex] = objectURL;
                     return newImages;
                   });
-                  
+
+                  setFolderList(prevFolders => {
+                    const newFolders = [...prevFolders];
+                    newFolders[folderIndex] = folder;
+                    return newFolders;
+                  });
                   
                 }
               } else {
                 // Handle blob creation error
                 console.error(`Error creating blob for ${randomKey}`);
-                
-                // Still store the folder but with placeholder image
-                processedFolders.push(folder);
-                processedImages.push(placeholderImage);
-                
-                const folderIndex = folders.indexOf(folder);
-                
+               
               }
             } catch (error) {
               console.error(`Error processing ${randomKey}:`, error);
-              
-              // Still keep track of this folder with a placeholder
-              processedFolders.push(folder);
-              processedImages.push(placeholderImage);
-              
-              const folderIndex = folders.indexOf(folder);
-             
             }
           }
         }
         
         // After all folders are processed
-        if (processedFolders.length > 0) {
-          console.log(`Processed ${processedFolders.length} folders`);
-          setFolderList(processedFolders);
-          
-          // Mark any remaining folders as not loading
-         
+        if (folders.length > 0) {
+          console.log(`Processed ${folders.length} folders`);
         }
         
       } catch (error) {
