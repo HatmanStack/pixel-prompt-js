@@ -34,7 +34,11 @@ const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, onL
        {/* Container View needed for positioning the loader */}
        <View style={styles.imageContainer}>
             <Image
-                source={typeof source === "number" ? source : { uri: source }}
+                source={
+                  typeof source === 'string' 
+                    ? { uri: source }      
+                    : source                
+                }
                 style={styles.gridImage}
                 resizeMode="cover"
                 onLoad={() => onLoadCallback(index)} // Notify parent when image loads

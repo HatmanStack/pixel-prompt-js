@@ -1,6 +1,5 @@
 import React from "react";
 import { StyleSheet, Pressable, Image, Text, View } from "react-native";
-import { Dimensions } from "react-native";
 
 const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
   const rightImage = require("../assets/right.png");

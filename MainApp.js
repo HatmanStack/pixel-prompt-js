@@ -4,10 +4,9 @@ import {
   View,
   ScrollView,
   Text,
-  Dimensions,
-  Image
+  Dimensions
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
+
 import { useFonts } from "expo-font";
 
 import SliderComponent from "./components/Slider";
@@ -22,7 +21,7 @@ import Inference from "./components/Inference";
 import SoundPlayer from "./components/Sounds";
 import NewImage from "./components/NewImage";
 
-const assetImage = require("./assets/avocado.jpg");
+const assetImage = require('./assets/avocado.jpg');
 
 export default function App() {
   useFonts({ Sigmar: require("./assets/Sigmar/Sigmar-Regular.ttf") });
@@ -47,7 +46,7 @@ export default function App() {
   const [settingSwitch, setSettingSwitch] = useState(true);
   const [soundIncrement, setSoundIncrement] = useState(null);
   const [makeSound, setMakeSound] = useState([null,0]);
-  const [galleryLoadingStatus, setGalleryLoadingStatus] = useState(false);
+ 
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [columnCount, setColumnCount] = useState(3);
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
@@ -288,7 +287,7 @@ export default function App() {
           </View>
         )}
       </ScrollView>
-      <StatusBar style="auto" />
+      
     </View>
   );
 }

@@ -154,9 +154,9 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
           <View style={styles.imageContainer}>
             <Image
               source={
-                typeof image === "number"
-                  ? image
-                  : { uri: image }
+                typeof image === 'string' 
+                  ? { uri: image }      
+                  : image                
               }
               style={styles.gridImageStyle}
               resizeMode="cover"

@@ -5,7 +5,6 @@ import Slider from "@react-native-community/slider";
 export default function SliderComponent({ setSteps, setGuidance, setControl }) {
   const [samplingValue, setSamplingValue] = React.useState(28);
   const [guidanceValue, setGuidanceValue] = React.useState(5);
-  const [controlValue, setControlValue] = React.useState(1.0);
 
   // Handle sampling steps change
   const handleStepChange = (x) => {
@@ -19,10 +18,6 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
     setGuidance(parseFloat(x.toFixed(2)));
   };
 
-  const handleControlChange = (x) => {
-    setControlValue(parseFloat(x.toFixed(2)));
-    setControl(parseFloat(x.toFixed(2)));
-  };
 
   return (
     <View style={styles.container}>
