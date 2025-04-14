@@ -374,6 +374,9 @@ const Inference = ({
         region: process.env.EXPO_PUBLIC_AWS_REGION,
         accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
         secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
+        httpOptions: {
+          timeout: 60000 
+        }
       });
 
       // Define the models
@@ -441,12 +444,15 @@ const Inference = ({
                 // Return early since we can't proceed with this model
                 return;
               }
-              if (responseData && responseData.output) {
+              if (responseData.output && /Error/.test(responseData.output)){
+                currentImageResult = placeholderImage
+                currentPromptResult = `Model:\n${responseData.model}\n\n${responseData.output}`;
+              }
+              else if (responseData && responseData.output) {
                 currentImageResult = responseData.output;
                 // Decide which prompt to display: original user prompt or model-specific output?
                 // Using original prompt combined with model label for clarity:
                 currentPromptResult = `Model:\n${responseData.model || model.label}\n\nPrompt:\n${prompt}`;
-                parseSuccess = true;
               } else {
                  console.error(`Invalid response structure for ${model.label}:`, responseData);
                  processingErrorOccurred = true;

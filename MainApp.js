@@ -52,6 +52,7 @@ export default function App() {
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(Array(9).fill(false));
   const isWindowBiggerThanContainer = Dimensions.get('window').width > 600 ? 500 : "100%"
+  const [reactiveWindowHeight, setReactiveWindowHeight] = useState(Dimensions.get('window').height * 0.7); 
   
 
   const setPlaySound = (sound) => {
@@ -81,6 +82,7 @@ export default function App() {
   useEffect(() => {
     const handleResize = () => {
       updateColumnCount(Dimensions.get('window').width);
+      setReactiveWindowHeight(Dimensions.get('window').height * 0.7); 
     };
     handleResize();
     Dimensions.addEventListener('change', handleResize);
@@ -213,7 +215,7 @@ export default function App() {
             </View>
             
             <View style={styles.rightColumnContainer}>
-            <View style={styles.imageCard}>
+            <View style={[styles.imageCard, { height: reactiveWindowHeight }]}>
               <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
             </View>
           </View>
@@ -281,7 +283,7 @@ export default function App() {
 )}
             
             <SliderComponent setSteps={setSteps} setGuidance={setGuidance} setControl={setControl}/>
-            <View style={[styles.imageCard, { height: '33%' }]}>
+            <View style={[styles.imageCard, { height: reactiveWindowHeight }]}>
               <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
             </View>
           </View>
@@ -373,7 +375,6 @@ const styles = StyleSheet.create({
  
   imageCard:{
     width: "100%",
-    height: "92%",
     borderRadius: 18,
     marginTop: 20,
     marginBottom: 20,
