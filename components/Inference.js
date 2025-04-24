@@ -25,15 +25,15 @@ const Inference = ({
 
   const [folderList, setFolderList] = useState([]);
   const models = [
-    { label: "SD 3.5 Turbo", value: "stabilityai/stable-diffusion-3.5-large-turbo" },
-    { label: "Black Forest Schnel", value: "black-forest-labs/FLUX.1-schnell" },
-    { label: "SD 3.5 Large", value: "stabilityai/stable-diffusion-3.5-large" },
-    { label: "Recraft v3", value: "Recraft v3" },
-    { label: "Black Forest Dev", value: "black-forest-labs/FLUX.1-dev" },
-    { label: "AWS Nova Canvas", value: "AWS Nova Canvas" },
-    { label: "Imagen 3.0", value: "Imagen 3.0" },
-    { label: "OpenAI Dalle3", value: "OpenAI Dalle3" },
-    { label: "Gemini 2.0", value: "Gemini 2.0" }
+   "Stable Diffusion 3.5 Turbo",
+    "Black Forest Pro", 
+     "Stable Diffusion 3.5 Large", 
+     "Recraft v3", 
+     "Black Forest Dev", 
+     "AWS Nova Canvas", 
+     "Imagen 3.0", 
+     "OpenAI Dalle3", 
+     "Gemini 2.0",
   ];
 
   useEffect(() => {
@@ -210,21 +210,13 @@ const Inference = ({
             
             // Find the correct model index based on the prompt content
             let modelIndex = 0; // Default to first position if no match found
-            modelPlace =["Stable Diffusion 3.5 Turbo" ,
-              "Black Forest Schnell" ,
-              "Stable Diffusion 3.5 Large" ,
-             "Recraft v3", 
-               "Black Forest Developer" ,
-               "AWS Nova Canvas" ,
-             "Imagen 3.0" ,
-            "OpenAI Dalle3" ,
-              "Gemini 2.0" ]
+            
               
             
             // Check which model this prompt belongs to
             
             for (let i = 0; i < models.length; i++) {
-              if (prompt.includes(modelPlace[i])) {
+              if (prompt.includes(models[i])) {
                 modelIndex = i;
                 break;
               }
@@ -297,7 +289,7 @@ const Inference = ({
               setReturnedPrompt(prevPrompts => {
                 const newPrompts = [...prevPrompts];
                 // Set the prompt to indicate which model had no image
-                newPrompts[index] = `No image found for model: ${modelPlace[index]}`;
+                newPrompts[index] = `No image found for model: ${models[index]}`;
                 return newPrompts;
               });
             }
@@ -406,19 +398,15 @@ const Inference = ({
       
       // --- Process each model ---
       models.forEach((model, index) => {
-        const isGoogleModel = /Gemini|Imagen|Recraft/i.test(model.value);
-        const lambdaFunction = isGoogleModel
-          ? process.env.EXPO_PUBLIC_AWS_LAMBDA_GOOGLE_FUNCTION
-          : process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION;
-
+        
         const params = {
-          FunctionName: lambdaFunction,
+          FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
           InvocationType: "RequestResponse",
           Payload: JSON.stringify({
             prompt: prompt,
             steps: steps,
             guidance: guidance,
-            modelID: model.value,
+            modelID: model,
             ip: clientIP, 
             target: time, 
             control: control,
@@ -431,7 +419,7 @@ const Inference = ({
         lambda.invoke(params).promise()
           .then((data) => {
             let currentImageResult = errorImage; // Default to error image
-            let currentPromptResult = `Error parsing response for ${model.label}`;
+            let currentPromptResult = `Error parsing response for ${model}`;
             
             try {
               const jsonHolder = JSON.parse(data.Payload).body;
@@ -452,13 +440,13 @@ const Inference = ({
                 currentImageResult = responseData.output;
                 // Decide which prompt to display: original user prompt or model-specific output?
                 // Using original prompt combined with model label for clarity:
-                currentPromptResult = `Model:\n${responseData.model || model.label}\n\nPrompt:\n${prompt}`;
+                currentPromptResult = `Model:\n${responseData.model || model}\n\nPrompt:\n${prompt}`;
               } else {
-                 console.error(`Invalid response structure for ${model.label}:`, responseData);
+                 console.error(`Invalid response structure for ${model}:`, responseData);
                  processingErrorOccurred = true;
               }
             } catch (error) {
-              console.error(`Error parsing JSON response for ${model.label}:`, error);
+              console.error(`Error parsing JSON response for ${model}:`, error);
               processingErrorOccurred = true;
             }
 
@@ -515,9 +503,9 @@ const Inference = ({
             });
           })
           .catch((error) => {
-            console.error(`Lambda invocation error for ${model.label}:`, error);
+            console.error(`Lambda invocation error for ${model}:`, error);
             processingErrorOccurred = true;
-            const lambdaErrorPrompt = `Lambda Error: ${model.label}`;
+            const lambdaErrorPrompt = `Lambda Error: ${model}`;
 
             // --- Update states incrementally on Lambda error ---
             setInferredImage(prevImages => {

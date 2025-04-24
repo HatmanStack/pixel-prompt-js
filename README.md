@@ -50,8 +50,6 @@ Include an .env file for your Hugging Face API Key.
   AWS_ID=<ID>
   AWS_SECRET=<secret>
   AWS_LAMBDA_FUNCTION=<name>
-  AWS_LAMBDA_GOOGLE_FUNCTION=<name>
-  AWS_REGION=<name>
   S3_BUCKET=<name>
   PUBLIC_CLOUDFRONT_DOMAIN=<cloudfrontdomain>
    ```
@@ -64,8 +62,8 @@ All the models are SOTA and some are available on HuggingFace.
 
 - **Stable Diffusion Large**
 - **Stable Diffusion Turbo**
-- **Black Forest Schnell**
-- **Black Forest Developer**
+- **Black Forest Pro**
+- **Black Forest Dev**
 - **Recraft v3**
 - **OpenAI Dalle3**
 - **AWS Nova Canvas**
