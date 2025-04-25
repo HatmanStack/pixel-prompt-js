@@ -12,7 +12,6 @@ import { useFonts } from "expo-font";
 import SliderComponent from "./components/Slider";
 import PromptInputComponent from "./components/PromptInput";
 import BreathingComponent from "./components/Breathing";
-import SafteySwitch from "./components/SafteySwitch";
 import ImageGrid from "./components/ImageGrid";
 import Buttons from "./components/Buttons";
 import Expand from "./components/Expand";
@@ -43,7 +42,6 @@ export default function App() {
   const [inferrenceButton, setInferrenceButton] = useState(null);
   const [isImagePickerVisible, setImagePickerVisible] = useState(false);
   const [imageSource, setImageSource] = useState([]);
-  const [settingSwitch, setSettingSwitch] = useState(true);
   const [soundIncrement, setSoundIncrement] = useState(null);
   const [makeSound, setMakeSound] = useState([null,0]);
  
@@ -104,7 +102,6 @@ export default function App() {
         setActivity={setActivity}
         setModelError={setModelError}
         setModelMessage={setModelMessage}
-        settingSwitch={settingSwitch}
       />
       <Inference
       setGalleryLoaded={setGalleryLoaded}
@@ -115,10 +112,8 @@ export default function App() {
         setModelMessage={setModelMessage}
         imageSource={imageSource}
         prompt={prompt}
-        settingSwitch={settingSwitch}
         control={control}
         guidance={guidance}
-  
         steps={steps}
         setActivity={setActivity}
         setModelError={setModelError}
@@ -146,14 +141,8 @@ export default function App() {
                 />
               </View>
               
-              <View style={[styles.rowContainer, { padding: 0 }]}>
-                <SafteySwitch
-                  settingSwitch={settingSwitch}
-                  setPlaySound={setPlaySound}
-                  setSettingSwitch={setSettingSwitch}
-                  
-                />
-                <View style={styles.columnContainer}>
+                
+                
                   <Buttons
                     setPlaySound={setPlaySound}
                     setInferrenceButton={setInferrenceButton}
@@ -164,9 +153,7 @@ export default function App() {
                     promptLengthValue={promptLengthValue}
                   />
                   
-                </View>
                 
-              </View>
               {modelError ? (
                     <Text style={styles.promptText}>{modelMessage}</Text>
                   ) : (
@@ -191,21 +178,21 @@ export default function App() {
                   toggleVisibility={() => setImagePickerVisible(!isImagePickerVisible)}
                 />
                 {isImagePickerVisible && (
-  <View style={styles.imageGridContainer}>
-    <ImageGrid
-      imageSource={imageSource}
-      columnCount={columnCount}
-      galleryLoaded={galleryLoaded}
-      setSelectedImageIndex={setSelectedImageIndex}
-      selectedImageIndex={selectedImageIndex}
-      setPlaySound={setPlaySound}
-      
-      containerWidth={isWindowBiggerThanContainer === "100%" ? 
-        Dimensions.get('window').width - 40 : // Full width minus padding
-        isWindowBiggerThanContainer} // Use your existing width variable
-    />
-  </View>
-)}
+                    <View style={styles.imageGridContainer}>
+                      <ImageGrid
+                        imageSource={imageSource}
+                        columnCount={columnCount}
+                        galleryLoaded={galleryLoaded}
+                        setSelectedImageIndex={setSelectedImageIndex}
+                        selectedImageIndex={selectedImageIndex}
+                        setPlaySound={setPlaySound}
+                        
+                        containerWidth={isWindowBiggerThanContainer === "100%" ? 
+                          Dimensions.get('window').width - 40 : // Full width minus padding
+                          isWindowBiggerThanContainer} // Use your existing width variable
+                      />
+                    </View>
+                  )}
                 <SliderComponent
                   setSteps={setSteps}
                   setGuidance={setGuidance}

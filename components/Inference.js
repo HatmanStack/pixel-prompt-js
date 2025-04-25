@@ -12,7 +12,6 @@ const Inference = ({
   inferrenceButton,
   setModelMessage,
   prompt,
-  settingSwitch,
   control,
   guidance,
   steps,
@@ -54,12 +53,12 @@ const Inference = ({
           Delimiter: "/"  // Use delimiter to get "folders"
         };
         
-        console.log("Fetching folders in group-images/");
+        //console.log("Fetching folders in group-images/");
         const folderData = await s3.listObjectsV2(params).promise();
         
         // Extract folder names from CommonPrefixes (S3's way of representing folders)
         const folders = folderData.CommonPrefixes?.map(prefix => prefix.Prefix) || [];
-        console.log(`Found ${folders.length} folders:`, folders);
+        //console.log(`Found ${folders.length} folders:`, folders);
         
         // Set initial states ONLY ONCE before we start processing folders
         setFolderList(Array(folders.length).fill('Holder-Image/'));
@@ -88,7 +87,7 @@ const Inference = ({
             const randomIndex = Math.floor(Math.random() * imageKeys.length);
             const randomKey = imageKeys[randomIndex];
             
-            console.log(`Selected random image: ${randomKey}`);
+            //console.log(`Selected random image: ${randomKey}`);
             
             try {
               // Fetch the selected image data
@@ -147,7 +146,7 @@ const Inference = ({
         
         // After all folders are processed
         if (folders.length > 0) {
-          console.log(`Processed ${folders.length} folders`);
+          //console.log(`Processed ${folders.length} folders`);
         }
         
       } catch (error) {
@@ -167,7 +166,7 @@ const Inference = ({
       if(selectedImageIndex !== null && selectedImageIndex !== undefined) {
         setGalleryLoaded(false);
         const selectedFolder = folderList[selectedImageIndex];
-        console.log("Selected folder:", selectedFolder);
+        //console.log("Selected folder:", selectedFolder);
         const AWS = require("aws-sdk");
         setActivity(true); 
         setLoadingStatus(Array(models.length).fill(true));
@@ -410,8 +409,7 @@ const Inference = ({
             ip: clientIP, 
             target: time, 
             control: control,
-            task: "image", // Ensure lambda handles this task type
-            safety: settingSwitch
+            task: "image"
           }),
         };
 

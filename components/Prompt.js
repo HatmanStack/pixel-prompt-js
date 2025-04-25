@@ -11,8 +11,7 @@ const PromptInference = ({
   promptLengthValue,
   setActivity,
   setModelError,
-  setModelMessage,
-  settingSwitch
+  setModelMessage
 }) => {
   
   useEffect(() => {
@@ -39,7 +38,6 @@ const PromptInference = ({
         FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
         InvocationType: 'RequestResponse',
         Payload: JSON.stringify({
-          safety: settingSwitch,
           itemString: alteredPrompt,
           task: "text",
           ip:'1.1.1.1',
@@ -67,7 +65,7 @@ const PromptInference = ({
             return;
           }
           const longPrompt = responseData.plain;
-          console.log(longPrompt);
+          //console.log(longPrompt);
           setLongPrompt(longPrompt);
           setShortPrompt(alteredPrompt);
           if (!promptLengthValue) {
