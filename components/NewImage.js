@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator, Dimensions } from 'react-native';
+const placeholderImage = require('../assets/avocado.jpg'); 
 
 const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton, galleryLoaded}) => {
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
@@ -94,7 +95,8 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   // If an image is expanded, only show that image
   if (expandedImageIndex !== null) {
     const expandedImage = inferredImage[expandedImageIndex];
-    
+    console.log("Expanded image:", expandedImage);
+    console.log('Returned prompt:', returnedPrompt[expandedImageIndex]);
     return (
       <>
         <View style={[
@@ -109,10 +111,10 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
             onPress={() => handleImagePress(expandedImageIndex)}
           >
             <Image
-              source={
-                typeof expandedImage === "number"
-                  ? expandedImage
-                  : { uri: expandedImage }
+               source={
+                typeof expandedImage === "number" || expandedImage === placeholderImage
+                  ? placeholderImage // Use placeholderImage if it's an asset
+                  : { uri: expandedImage } // Use the URI for other cases
               }
               style={styles.expandedImage}
               resizeMode="contain"

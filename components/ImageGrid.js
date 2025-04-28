@@ -85,9 +85,9 @@ const ImageGrid = ({
     setPlaySound("click");
     // Check if the image has actually loaded before allowing selection
     // Or remove this check if you want to allow selection even while loading
+    
     if (imageLoadedStatus[index] && index !== selectedImageIndex) {
-      setSelectedImageIndex(index);
-   
+      setSelectedImageIndex(index);  
     }
   };
 

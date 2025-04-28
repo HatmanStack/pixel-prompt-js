@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 const AWS = require("aws-sdk"); 
 const placeholderImage = require('../assets/avocado.jpg'); // Or a dedicated loading image asset
 const errorImage = require('../assets/add_image.png');
+const trollImages = require('../assets/trolls.json');
 const cloudFrontDomain = process.env.EXPO_PUBLIC_CLOUDFRONT_DOMAIN;
+
 
 const Inference = ({
   setGalleryLoaded,
@@ -338,28 +340,47 @@ const Inference = ({
       
       setModelError(false);
       setModelMessage(""); // Clear previous messages
-
-      // --- Troll check logic ---
+      console.log("Processing models with prompt:", prompt);
       if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies|naked|nude|shower)\b/i.test(prompt)) {
-        const trollImages = [
-          require('../assets/troll/troll_1.jpg'), require('../assets/troll/ct.png'),
-          require('../assets/troll/ct1.png'), require('../assets/troll/ct2.png'),
-          require('../assets/troll/ct3.png'), require('../assets/troll/ct4.png'),
-          require('../assets/troll/ct5.png'), require('../assets/troll/troll_3.jpg'),
-          require('../assets/troll/troll_4.jpg'),
-        ];
+        // Example: Set the base64 images in state
+        const convertBase64ToBlobs = (imagesJson) => {
+          const blobs = {};
+        
+          Object.keys(imagesJson).forEach((key) => {
+            const base64Data = imagesJson[key];
+            const mimeType = 'image/png'; // Adjust the MIME type if necessary
+            const blob = base64ToBlob(base64Data, mimeType);
+        
+            if (blob) {
+              blobs[key] = URL.createObjectURL(blob); // Create a blob URL for each image
+            } else {
+              console.error(`Failed to convert base64 to blob for key: ${key}`);
+            }
+          });
+        
+          return blobs;
+        };
+        
+        // Convert the troll images to blobs
+        
+        
         const trollPrompt = "Model:\nThese are not the Droids you are looking for\n\nPrompt:\nYou have to pay the Troll Toll to get inside this boys hole";
-        const trollPromptsArray = Array(trollImages.length).fill(trollPrompt);
-
-        setInferredImage(trollImages);
+        const trollPromptsArray = Array(9).fill(trollPrompt);
         setReturnedPrompt(trollPromptsArray);
         setLoadingStatus(Array(trollImages.length).fill(false));
+        const trollImageBlobs = convertBase64ToBlobs(trollImages);
+        setInferredImage(Object.values(trollImageBlobs));
         setActivity(false);
-        
+        setInferrenceButton(false);
         return; 
       }
+      
       // --- End Troll check ---
-
+      if (prompt.trim() === "") {
+        setModelError(true);
+        setModelMessage("Please enter a prompt before inferring.");
+        return;
+      }
       // Configure AWS Lambda
       const lambda = new AWS.Lambda({
         region: process.env.EXPO_PUBLIC_AWS_REGION,
@@ -370,13 +391,9 @@ const Inference = ({
         }
       });
 
-      // Define the models
-      
-
       let completedRequests = 0;
       let processingErrorOccurred = false; // Track if any request fails
 
-      // --- Set Initial Loading State for all items ---
       setActivity(true); // Indicate processing has started
       setLoadingStatus(Array(models.length).fill(true));
       // Optional: Set placeholders immediately if desired
@@ -455,39 +472,27 @@ const Inference = ({
 
             if (blob) {
                 const objectURL = URL.createObjectURL(blob);
-                // Store the objectURL instead of base64
-                // If using local accumulator (batching approach):
-                // localInferredImages[index] = objectURL;
-
-                // If using incremental state updates:
                 setInferredImage(prevImages => {
                   const newImages = [...prevImages];
-                  // --- Revoke previous URL if necessary! See point 3 ---
                   const oldUrl = newImages[index];
                   if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(oldUrl);
                   }
-                  // --- End Revocation ---
                   newImages[index] = objectURL;
                   return newImages;
                 });
             } else {
-                // Handle blob creation error - maybe set an error image URL or placeholder
-                // If using local accumulator:
-                // localInferredImages[index] = errorImage; // Assuming errorImage is a static path
-                // If using incremental updates:
                 setInferredImage(prevImages => {
                   const newImages = [...prevImages];
-                  // Revoke previous if needed
                   const oldUrl = newImages[index];
                   if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
                       URL.revokeObjectURL(oldUrl);
                   }
-                  newImages[index] = errorImage; // Your static error image path
+                  newImages[index] = errorImage; 
                   return newImages;
                 });
             }
-            // Update both returned and initial prompt states to keep them in sync
+
             setReturnedPrompt(prevPrompts => {
               const newPrompts = [...prevPrompts];
               newPrompts[index] = currentPromptResult;
@@ -496,7 +501,7 @@ const Inference = ({
             
             setLoadingStatus(prevStatus => {
               const newStatus = [...prevStatus];
-              newStatus[index] = false; // Mark this index as not loading
+              newStatus[index] = false; 
               return newStatus;
             });
           })
@@ -505,13 +510,12 @@ const Inference = ({
             processingErrorOccurred = true;
             const lambdaErrorPrompt = `Lambda Error: ${model}`;
 
-            // --- Update states incrementally on Lambda error ---
             setInferredImage(prevImages => {
               const newImages = [...prevImages];
               newImages[index] = errorImage;
               return newImages;
             });
-            // Update both returned and initial prompt states
+
             setReturnedPrompt(prevPrompts => {
               const newPrompts = [...prevPrompts];
               newPrompts[index] = lambdaErrorPrompt;
