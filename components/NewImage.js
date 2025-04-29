@@ -95,8 +95,7 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   // If an image is expanded, only show that image
   if (expandedImageIndex !== null) {
     const expandedImage = inferredImage[expandedImageIndex];
-    console.log("Expanded image:", expandedImage);
-    console.log('Returned prompt:', returnedPrompt[expandedImageIndex]);
+    
     return (
       <>
         <View style={[

@@ -36,6 +36,15 @@ const Inference = ({
      "OpenAI Dalle3", 
      "Gemini 2.0",
   ];
+  const [time, setTime] = useState(new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/[/:,\s]/g, '-'));
 
   useEffect(() => {
     const fetchGalleryImages = async () => {
@@ -340,7 +349,7 @@ const Inference = ({
       
       setModelError(false);
       setModelMessage(""); // Clear previous messages
-      console.log("Processing models with prompt:", prompt);
+      
       if (/\b(elf|elves|elven|girl|girls|fairy|fairies|pixie|pixies|naked|nude|shower)\b/i.test(prompt)) {
         // Example: Set the base64 images in state
         const convertBase64ToBlobs = (imagesJson) => {
@@ -401,15 +410,7 @@ const Inference = ({
       const loadingPrompts = Array(models.length).fill("Loading...");
       setReturnedPrompt(loadingPrompts);
      
-      const time = new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }).replace(/[/:,\s]/g, '-');
+      
       const clientIP = await getClientIP();
       
       // --- Process each model ---
@@ -535,6 +536,15 @@ const Inference = ({
             if (completedRequests === models.length) {
               setActivity(false); // Reset activity state
               setInferrenceButton(false);
+              setTime(new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+              }).replace(/[/:,\s]/g, '-'));
               if (processingErrorOccurred) {
                 setModelMessage("One or more images failed to generate.");
                 // setModelError(true); // Uncomment if you want a general error flag
