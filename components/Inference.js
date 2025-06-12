@@ -4,25 +4,42 @@ const placeholderImage = require('../assets/avocado.jpg'); // Or a dedicated loa
 const errorImage = require('../assets/add_image.png');
 const trollImages = require('../assets/trolls.json');
 const cloudFrontDomain = process.env.EXPO_PUBLIC_CLOUDFRONT_DOMAIN;
+import useAppStore from '../store/appStore';
 
-
-const Inference = ({
-  setGalleryLoaded,
-  selectedImageIndex,
-  setImageSource,
-  setInferrenceButton,
-  inferrenceButton,
-  setModelMessage,
-  prompt,
-  control,
-  guidance,
-  steps,
-  setActivity,
-  setModelError,
-  setReturnedPrompt,
-  setInferredImage,
-  setLoadingStatus
-}) => {
+const Inference = () => {
+  const {
+    setGalleryLoaded,
+    selectedImageIndex,
+    setImageSource,
+    setInferrenceButton,
+    inferrenceButton,
+    setModelMessage,
+    prompt,
+    control,
+    guidance,
+    steps,
+    setActivity,
+    setModelError,
+    setReturnedPrompt,
+    setInferredImage,
+    setLoadingStatus
+  } = useAppStore(state => ({
+    setGalleryLoaded: state.setGalleryLoaded,
+    selectedImageIndex: state.selectedImageIndex,
+    setImageSource: state.setImageSource,
+    setInferrenceButton: state.setInferrenceButton,
+    inferrenceButton: state.inferrenceButton,
+    setModelMessage: state.setModelMessage,
+    prompt: state.prompt,
+    control: state.control,
+    guidance: state.guidance,
+    steps: state.steps,
+    setActivity: state.setActivity,
+    setModelError: state.setModelError,
+    setReturnedPrompt: state.setReturnedPrompt,
+    setInferredImage: state.setInferredImage,
+    setLoadingStatus: state.setLoadingStatus,
+  }));
 
   const [folderList, setFolderList] = useState([]);
   const models = [

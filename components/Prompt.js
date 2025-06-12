@@ -1,18 +1,31 @@
 import { useEffect } from "react";
 import seeds from "../assets/seeds.json";
+import useAppStore from '../store/appStore';
 
-const PromptInference = ({
-  prompt,
-  textInference,
-  setTextInference,
-  setLongPrompt,
-  setShortPrompt,
-  setInferredPrompt,
-  promptLengthValue,
-  setActivity,
-  setModelError,
-  setModelMessage
-}) => {
+const PromptInference = () => {
+  const {
+    prompt,
+    textInference,
+    setTextInference,
+    setLongPrompt,
+    setShortPrompt,
+    setInferredPrompt,
+    promptLengthValue,
+    setActivity,
+    setModelError,
+    setModelMessage
+  } = useAppStore(state => ({
+    prompt: state.prompt,
+    textInference: state.textInference,
+    setTextInference: state.setTextInference,
+    setLongPrompt: state.setLongPrompt,
+    setShortPrompt: state.setShortPrompt,
+    setInferredPrompt: state.setInferredPrompt,
+    promptLengthValue: state.promptLengthValue,
+    setActivity: state.setActivity,
+    setModelError: state.setModelError,
+    setModelMessage: state.setModelMessage,
+  }));
   
   useEffect(() => {
     if (textInference) {

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import { useFonts } from "expo-font";
+import useAppStore from './store/appStore'; // Import the store
 
 import SliderComponent from "./components/Slider";
 import PromptInputComponent from "./components/PromptInput";
@@ -19,108 +20,84 @@ import PromptInference from "./components/Prompt";
 import Inference from "./components/Inference";
 import SoundPlayer from "./components/Sounds";
 import NewImage from "./components/NewImage";
-
-const assetImage = require('./assets/avocado.jpg');
+import { colors as themeColors } from '../styles/theme'; // Import theme colors
+import { commonStyles } from '../styles/commonStyles'; // Import common styles
 
 export default function App() {
   useFonts({ Sigmar: require("./assets/Sigmar/Sigmar-Regular.ttf") });
-  const [inferredImage, setInferredImage] = useState(Array(9).fill(assetImage));
-  const [steps, setSteps] = useState(28);
-  const [guidance, setGuidance] = useState(5);
-  const [control, setControl] = useState(1.0);
-  const [galleryLoaded, setGalleryLoaded] = useState(true);
-  const [prompt, setPrompt] = useState("Avocado Armchair");
-  const [inferredPrompt, setInferredPrompt] = useState(null);
-  const [activity, setActivity] = useState(false);
-  const [modelError, setModelError] = useState(false);
-  const [returnedPrompt, setReturnedPrompt] = useState(Array(9).fill("Avacado Armchair"))
-  const [textInference, setTextInference] = useState(false);
-  const [shortPrompt, setShortPrompt] = useState("");
-  const [longPrompt, setLongPrompt] = useState(null);
-  const [promptLengthValue, setPromptLengthValue] = useState(false);
-  const [modelMessage, setModelMessage] = useState("");
-  const [inferrenceButton, setInferrenceButton] = useState(null);
-  const [isImagePickerVisible, setImagePickerVisible] = useState(false);
-  const [imageSource, setImageSource] = useState([]);
-  const [soundIncrement, setSoundIncrement] = useState(null);
-  const [makeSound, setMakeSound] = useState([null,0]);
- 
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-  const [columnCount, setColumnCount] = useState(3);
-  const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState(Array(9).fill(false));
+
+  // Access state and actions from the store
+  const {
+    inferredImage,
+    steps,
+    guidance,
+    control,
+    galleryLoaded,
+    prompt,
+    inferredPrompt,
+    activity,
+    modelError,
+    returnedPrompt,
+    textInference,
+    shortPrompt,
+    longPrompt,
+    promptLengthValue,
+    modelMessage,
+    inferrenceButton,
+    isImagePickerVisible,
+    imageSource,
+    makeSound,
+    selectedImageIndex,
+    columnCount,
+    isGuidanceVisible,
+    loadingStatus,
+    setInferredImage,
+    setSteps,
+    setGuidance,
+    setControl,
+    setGalleryLoaded,
+    setPrompt,
+    setInferredPrompt,
+    setActivity,
+    setModelError,
+    setReturnedPrompt,
+    setTextInference,
+    setShortPrompt,
+    setLongPrompt,
+    setPromptLengthValue,
+    setModelMessage,
+    setInferrenceButton,
+    setIsImagePickerVisible,
+    setImageSource,
+    setMakeSound,
+    setSelectedImageIndex,
+    setColumnCount,
+    setIsGuidanceVisible,
+    setLoadingStatus,
+    setPlaySound,
+    switchPromptFunction,
+    updateColumnCount,
+  } = useAppStore();
+
   const isWindowBiggerThanContainer = Dimensions.get('window').width > 600 ? 500 : "100%"
   const [reactiveWindowHeight, setReactiveWindowHeight] = useState(Dimensions.get('window').height * 0.7); 
   
-
-  const setPlaySound = (sound) => {
-    setSoundIncrement(prevSoundIncrement => prevSoundIncrement + 1);
-    setMakeSound([sound, soundIncrement]);
-  };
-
-  const switchPromptFunction = () => {
-    setPromptLengthValue(!promptLengthValue);
-    if (promptLengthValue) {
-      setInferredPrompt(shortPrompt);
-      setPlaySound("switch");
-    } else {
-      setInferredPrompt(longPrompt);
-      setPlaySound("switch");
-    }
-  };
-
-  const updateColumnCount = (width) => {
-    if (width < 600) setColumnCount(3);
-    else if (width >= 600 && width < 1000) setColumnCount(4);
-    else if (width >= 1000 && width < 1400) setColumnCount(5);
-    else if (width >= 1400 && width < 1700) setColumnCount(6);
-    else setColumnCount(7);
-  };
-
   useEffect(() => {
     const handleResize = () => {
-      updateColumnCount(Dimensions.get('window').width);
+      updateColumnCount(Dimensions.get('window').width); // Update columnCount in the store
       setReactiveWindowHeight(Dimensions.get('window').height * 0.7); 
     };
     handleResize();
     Dimensions.addEventListener('change', handleResize);
     return () => Dimensions.removeEventListener('change', handleResize);
-  }, []);
+  }, [updateColumnCount]);
 
   return (
     // Main container
     <View style={styles.titlecontainer}>
-      <SoundPlayer makeSound={makeSound}/>
-      <PromptInference
-        prompt={prompt}
-        textInference={textInference}
-        setTextInference={setTextInference}
-        setLongPrompt={setLongPrompt}
-        setShortPrompt={setShortPrompt}
-        setInferredPrompt={setInferredPrompt}
-        promptLengthValue={promptLengthValue}
-        setActivity={setActivity}
-        setModelError={setModelError}
-        setModelMessage={setModelMessage}
-      />
-      <Inference
-      setGalleryLoaded={setGalleryLoaded}
-        setImageSource={setImageSource}
-        selectedImageIndex={selectedImageIndex}
-        setInferrenceButton={setInferrenceButton}
-        inferrenceButton={inferrenceButton}
-        setModelMessage={setModelMessage}
-        imageSource={imageSource}
-        prompt={prompt}
-        control={control}
-        guidance={guidance}
-        steps={steps}
-        setActivity={setActivity}
-        setModelError={setModelError}
-        setReturnedPrompt={setReturnedPrompt}
-        setInferredImage={setInferredImage}
-        setLoadingStatus={setLoadingStatus}
-      />
+      <SoundPlayer />
+      <PromptInference />
+      <Inference />
       <BreathingComponent />
       <ScrollView
         scrollY={true}
@@ -134,134 +111,88 @@ export default function App() {
 
             <View style={styles.leftColumnContainer}>
               <View>
-                <PromptInputComponent
-                  setPlaySound={setPlaySound}
-                  setPrompt={setPrompt}
-                  inferredPrompt={inferredPrompt}
-                />
+                <PromptInputComponent />
               </View>
               
                 
                 
-                  <Buttons
-                    setPlaySound={setPlaySound}
-                    setInferrenceButton={setInferrenceButton}
-                    activity={activity}
-                    longPrompt={longPrompt}
-                    setTextInference={setTextInference}
-                    switchPromptFunction={switchPromptFunction}
-                    promptLengthValue={promptLengthValue}
-                  />
+                  <Buttons />
                   
                 
               {modelError ? (
-                    <Text style={styles.promptText}>{modelMessage}</Text>
+                    <Text style={commonStyles.promptText}>{modelMessage}</Text>
                   ) : (
                     <></>
                   )}
               <Expand
-                  setPlaySound={setPlaySound}
                   isGuidance={true}
                   visible={isGuidanceVisible}
                   toggleVisibility={() => setIsGuidanceVisible(!isGuidanceVisible)}
                 />
                 {isGuidanceVisible && (
-                  <Text style={[styles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
+                  <Text style={[commonStyles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
                     The prompt button returns two different prompts; a seed prompt, descriptive prompt. If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt. To generate fresh prompts clear the input window.
                   </Text>
                 )}
 
                 <Expand
-                  setPlaySound={setPlaySound}
                   isGuidance={false}
                   visible={isImagePickerVisible}
-                  toggleVisibility={() => setImagePickerVisible(!isImagePickerVisible)}
+                  toggleVisibility={() => setIsImagePickerVisible(!isImagePickerVisible)}
                 />
                 {isImagePickerVisible && (
                     <View style={styles.imageGridContainer}>
                       <ImageGrid
-                        imageSource={imageSource}
-                        columnCount={columnCount}
-                        galleryLoaded={galleryLoaded}
-                        setSelectedImageIndex={setSelectedImageIndex}
-                        selectedImageIndex={selectedImageIndex}
-                        setPlaySound={setPlaySound}
-                        
                         containerWidth={isWindowBiggerThanContainer === "100%" ? 
                           Dimensions.get('window').width - 40 : // Full width minus padding
                           isWindowBiggerThanContainer} // Use your existing width variable
                       />
                     </View>
                   )}
-                <SliderComponent
-                  setSteps={setSteps}
-                  setGuidance={setGuidance}
-                  setControl={setControl}
-                />
+                <SliderComponent />
               
             </View>
             
             <View style={styles.rightColumnContainer}>
             <View style={[styles.imageCard, { height: reactiveWindowHeight }]}>
-              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
+              <NewImage />
             </View>
           </View>
           </View>
         ) : (
           <View style={styles.columnContainer}>
-            <PromptInputComponent
-              setPlaySound={setPlaySound}
-              setPrompt={setPrompt}
-              inferredPrompt={inferredPrompt}
-            />
+            <PromptInputComponent />
             
-            <Buttons
-              setPlaySound={setPlaySound}
-              setInferrenceButton={setInferrenceButton}
-              activity={activity}
-              longPrompt={longPrompt}
-              setTextInference={setTextInference}
-              switchPromptFunction={switchPromptFunction}
-              promptLengthValue={promptLengthValue}
-            />
+            <Buttons />
             
            
             {modelError ? (
-              <Text style={styles.promptText}>{modelMessage}</Text>
+              <Text style={commonStyles.promptText}>{modelMessage}</Text>
               
             ) : (
               <></>
             )}
             <Expand 
-                  setPlaySound={setPlaySound}
                   isGuidance={true}
                   visible={isGuidanceVisible}
                   toggleVisibility={() => setIsGuidanceVisible(!isGuidanceVisible)}
                 />
                 {isGuidanceVisible && (
                   
-                  <Text style={[styles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
+                  <Text style={[commonStyles.promptText, { width: isWindowBiggerThanContainer, margin: 20, fontSize: 14 }]}>
                     The prompt button returns two different prompts; a seed prompt, descriptive prompt. If the user creates a prompt and then uses the prompt button, user input will be treated as the seed prompt. To generate fresh prompts clear the input window.
                   </Text>
                   
                 )}
 
                 <Expand
-                  setPlaySound={setPlaySound}
                   isGuidance={false}
                   visible={isImagePickerVisible}
-                  toggleVisibility={() => setImagePickerVisible(!isImagePickerVisible)}
+                  toggleVisibility={() => setIsImagePickerVisible(!isImagePickerVisible)}
                 />
                 {isImagePickerVisible && (
   <View style={styles.imageGridContainer}>
     <ImageGrid
-      imageSource={imageSource}
-      columnCount={columnCount}
-      galleryLoaded={galleryLoaded}
-      setSelectedImageIndex={setSelectedImageIndex}
-      selectedImageIndex={selectedImageIndex}
-      setPlaySound={setPlaySound}
-      
       containerWidth={isWindowBiggerThanContainer === "100%" ? 
         Dimensions.get('window').width - 40 : // Full width minus padding
         isWindowBiggerThanContainer} // Use your existing width variable
@@ -269,9 +200,9 @@ export default function App() {
   </View>
 )}
             
-            <SliderComponent setSteps={setSteps} setGuidance={setGuidance} setControl={setControl}/>
+            <SliderComponent />
             <View style={[styles.imageCard, { height: reactiveWindowHeight }]}>
-              <NewImage inferredImage={inferredImage} setPlaySound={setPlaySound} returnedPrompt={returnedPrompt} loadingStatus={loadingStatus} inferrenceButton={inferrenceButton} galleryLoaded={galleryLoaded}/>
+              <NewImage />
             </View>
           </View>
         )}
@@ -281,16 +212,16 @@ export default function App() {
   );
 }
 
-const colors = {
-  backgroundColor: "#25292e",
-  buttonBackground: "#3a3c3f",
-  color: "#FFFFFF",
-  button: "#958DA5",
-};
+// const colors = { // Remove local colors object
+//   backgroundColor: "#25292e",
+//   buttonBackground: "#3a3c3f",
+//   color: "#FFFFFF",
+//   button: "#958DA5",
+// };
 
 const styles = StyleSheet.create({
   titlecontainer: {
-    backgroundColor: colors.backgroundColor,
+    backgroundColor: themeColors.background, // Use theme color
     position: "absolute",
     top: 0,
     left: 0,
@@ -299,7 +230,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   rowContainer: {
-    backgroundColor: colors.backgroundColor,
+    backgroundColor: themeColors.background, // Use theme color
     display: "flex",
     flexDirection: "row",
     marginTop: 10,
@@ -307,47 +238,46 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   leftColumnContainer: {
-    flex: 1,
-    alignItems: "center", // Center items horizontally
+    ...commonStyles.centeredColumnFlex,
     justifyContent: "flex-start",
-    flexDirection: "column",
     marginRight: 10,
   },
   rightColumnContainer: {
-    flex: 1,
-    alignItems: "center",
-    flexDirection: "column",
+    ...commonStyles.centeredColumnFlex,
     marginLeft: 10,
   },
   smallScreenButtonContainer: {
+    // This style seems specific and not directly replaceable by centeredColumnFlex alone
+    // It includes justifyContent: "center" which is different from centeredColumnFlex's default.
+    // If it's meant to be a centered column, it should also spread commonStyles.centeredColumnFlex
+    // For now, leaving as is unless it's confirmed to be a centered column like the others.
+    // If it should be like the others: ...commonStyles.centeredColumnFlex, justifyContent: "center",
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "column",
   },
   columnContainer: {
-    flex: 1,
-    alignItems: "center",
-    flexDirection: "column",
+    ...commonStyles.centeredColumnFlex,
   },
-  button: {
-    margin: 10,
-    borderRadius: 4,
-    paddingHorizontal: 32,
-    elevation: 3,
-    fontFamily: "Sigmar",
-  },
-  promptText: {
-    color: colors.color,
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    letterSpacing: 2,
-    lineHeight: 30,
-    fontFamily: "System",
-  },
+  // button: { // Removed as it's now in commonStyles.baseButton (and seemingly unused here)
+  //   margin: 10,
+  //   borderRadius: 4,
+  //   paddingHorizontal: 32,
+  //   elevation: 3,
+  //   fontFamily: "Sigmar",
+  // },
+  // promptText: { // Removed to use commonStyles.promptText
+  //   color: themeColors.text,
+  //   fontSize: 18,
+  //   fontWeight: "bold",
+  //   textAlign: "center",
+  //   letterSpacing: 2,
+  //   lineHeight: 30,
+  //   fontFamily: "System",
+  // },
   ScrollView: {
-    backgroundColor: colors.backgroundColor,
+    backgroundColor: themeColors.background, // Use theme color
     marginTop: 50,
     padding: 5,
     
@@ -366,7 +296,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     alignSelf: "center", 
-    backgroundColor: colors.backgroundColor, 
+    backgroundColor: themeColors.background, // Use theme color
     elevation: 3, 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 }, 

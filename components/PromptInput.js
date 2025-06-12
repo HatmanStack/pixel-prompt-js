@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react"; // Added useState
 import {
   Pressable,
   StyleSheet,
@@ -7,9 +7,16 @@ import {
   View,
   Dimensions
 } from "react-native";
+import useAppStore from '../store/appStore'; // Import the store
+import { colors as themeColors } from '../../styles/theme'; // Import theme colors
 
-export default function PromptInputComponent({ setPlaySound, setPrompt, inferredPrompt }) {
-  const [text, setText] = React.useState("");
+export default function PromptInputComponent() { // Remove props
+  const setPlaySound = useAppStore((state) => state.setPlaySound);
+  const setPrompt = useAppStore((state) => state.setPrompt);
+  const inferredPrompt = useAppStore((state) => state.inferredPrompt);
+  const setInferredPrompt = useAppStore((state) => state.setInferredPrompt); // For clearing
+
+  const [text, setText] = useState(""); // Keep local state for TextInput
 
   const textInputStyle = {
     ...styles.input,
@@ -17,27 +24,31 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
   };
 
   useEffect(() => {
-    if (inferredPrompt) {
+    // Update local text when inferredPrompt from store changes
+    if (inferredPrompt !== null && inferredPrompt !== undefined) {
       setText(inferredPrompt);
-      setPrompt(inferredPrompt);
+      // No need to call setPrompt(inferredPrompt) here if it's already set by the source of inferredPrompt
+    } else if (inferredPrompt === null) {
+      // Explicitly clear text if inferredPrompt is cleared
+      setText("");
     }
   }, [inferredPrompt]);
 
-  const handleTextChange = (x) => {
-    setText(x);
-    setPrompt(x);
+  const handleTextChange = (newText) => {
+    setText(newText);
+    setPrompt(newText); // Update global prompt state as user types
   };
 
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
       <TextInput
         style={textInputStyle}
-        placeholder=""
+        placeholder="Type your prompt here..." // Added placeholder
         multiline
         textAlign="center"
         onChangeText={handleTextChange}
         value={text}
-        maxLength={20000}
+        maxLength={20000} // Consider if this is needed from store
       />
       <Pressable
         style={({ pressed }) => [
@@ -54,8 +65,9 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
           },
         ]}
         onPress={() => {
-          setText("");
-          setPrompt("");
+          setText(""); // Clear local text
+          setPrompt(""); // Clear global prompt state
+          setInferredPrompt(null); // Clear inferred prompt in store
           setPlaySound("click");
         }}
       >
@@ -72,16 +84,16 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
   );
 }
 
-const colors = {
-  backgroundColor: "#FFFFFF",
-  borderColor: "#B58392",
-  color: "#000000",
-};
+// const colors = { // Remove local colors object
+//   backgroundColor: "#FFFFFF",
+//   borderColor: "#B58392",
+//   color: "#000000",
+// };
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: colors.backgroundColor,
-    borderColor: colors.borderColor,
+    backgroundColor: themeColors.text, // Assuming white background from theme's text color
+    borderColor: themeColors.highlightBorder,
     borderBottomLeftRadius: 4,
     borderWidth: 4,
     borderBottomRightRadius: 4,
@@ -92,7 +104,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
     fontSize: 20,
-    color: colors.color,
+    color: themeColors.background, // Dark text on light background
     fontFamily: "Sigmar",
     marginRight: 10,
   },

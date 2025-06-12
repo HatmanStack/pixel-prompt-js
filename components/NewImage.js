@@ -1,8 +1,24 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator, Dimensions } from 'react-native';
 const placeholderImage = require('../assets/avocado.jpg'); 
+import useAppStore from '../store/appStore';
 
-const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton, galleryLoaded}) => {
+const NewImage = () => {
+  const {
+    inferredImage,
+    setPlaySound,
+    returnedPrompt,
+    loadingStatus,
+    inferrenceButton,
+    galleryLoaded
+  } = useAppStore(state => ({
+    inferredImage: state.inferredImage,
+    setPlaySound: state.setPlaySound,
+    returnedPrompt: state.returnedPrompt,
+    loadingStatus: state.loadingStatus,
+    inferrenceButton: state.inferrenceButton,
+    galleryLoaded: state.galleryLoaded,
+  }));
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState(null);
   const [imageLoadedStatus, setImageLoadedStatus] = useState(Array(9).fill(true));

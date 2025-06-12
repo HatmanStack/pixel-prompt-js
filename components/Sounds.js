@@ -5,8 +5,10 @@ const click = require('../assets/click.wav');
 const swoosh = require('../assets/swoosh.mp3');
 const switchSound = require('../assets/switch.wav');
 const expand = require('../assets/expand.wav');
+import useAppStore from '../store/appStore';
 
-const SoundPlayer = ({ makeSound }) => {
+const SoundPlayer = () => {
+  const makeSound = useAppStore((state) => state.makeSound);
   const soundRef = useRef(null);
 
   useEffect(() => {

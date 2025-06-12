@@ -1,23 +1,62 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import Slider from "@react-native-community/slider";
+import useAppStore from '../store/appStore';
 
-export default function SliderComponent({ setSteps, setGuidance, setControl }) {
-  const [samplingValue, setSamplingValue] = React.useState(28);
-  const [guidanceValue, setGuidanceValue] = React.useState(5);
+export default function SliderComponent() {
+  const {
+    setSteps,
+    setGuidance,
+    setControl,
+    steps,      // Current value from store for initialization
+    guidance,   // Current value from store for initialization
+    control     // Current value from store for initialization
+  } = useAppStore(state => ({
+    setSteps: state.setSteps,
+    setGuidance: state.setGuidance,
+    setControl: state.setControl,
+    steps: state.steps,
+    guidance: state.guidance,
+    control: state.control,
+  }));
+
+  // Local state for sliders, initialized from the store
+  const [samplingValue, setSamplingValue] = React.useState(steps);
+  const [guidanceValue, setGuidanceValue] = React.useState(guidance);
+  const [controlValue, setControlValue] = React.useState(control); // Local state for control slider
 
   // Handle sampling steps change
-  const handleStepChange = (x) => {
-    setSamplingValue(x);
-    setSteps(x);
+  const handleStepChange = (value) => {
+    setSamplingValue(value);
+    setSteps(value);
   };
 
   // Handle guidance change
-  const handleGuidanceChange = (x) => {
-    setGuidanceValue(parseFloat(x.toFixed(2)));
-    setGuidance(parseFloat(x.toFixed(2)));
+  const handleGuidanceChange = (value) => {
+    const floatValue = parseFloat(value.toFixed(2));
+    setGuidanceValue(floatValue);
+    setGuidance(floatValue);
   };
 
+  // Handle control change
+  const handleControlChange = (value) => {
+    const floatValue = parseFloat(value.toFixed(1)); // Control might need different precision
+    setControlValue(floatValue);
+    setControl(floatValue);
+  };
+
+  // Update local state if store changes from elsewhere
+  React.useEffect(() => {
+    setSamplingValue(steps);
+  }, [steps]);
+
+  React.useEffect(() => {
+    setGuidanceValue(guidance);
+  }, [guidance]);
+
+  React.useEffect(() => {
+    setControlValue(control);
+  }, [control]);
 
   return (
     <View style={styles.container}>
@@ -34,6 +73,7 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
         onValueChange={handleStepChange}
       />
       <Text style={styles.sliderValue}>{samplingValue}</Text>
+
       <Text style={styles.captionText}>Prompt Guidance</Text>
       <Slider
         style={styles.slider}
@@ -46,8 +86,22 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
         thumbTintColor="#6750A4"
         onValueChange={handleGuidanceChange}
       />
-      <Text style={styles.sliderValue}>{guidanceValue}</Text>
-      
+      <Text style={styles.sliderValue}>{guidanceValue.toFixed(1)}</Text>
+
+      {/* Added Slider for Control */}
+      <Text style={styles.captionText}>Control Strength</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={0.1}
+        maximumValue={2.0}
+        step={0.1}
+        value={controlValue}
+        minimumTrackTintColor="#958DA5"
+        maximumTrackTintColor="#9DA58D"
+        thumbTintColor="#6750A4"
+        onValueChange={handleControlChange}
+      />
+      <Text style={styles.sliderValue}>{controlValue.toFixed(1)}</Text>
     </View>
   );
 }

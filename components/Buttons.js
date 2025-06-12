@@ -8,17 +8,27 @@ import {
   ActivityIndicator,
   Switch,
 } from "react-native";
+import useAppStore from '../store/appStore';
 
-const Buttons = ({
-  setPlaySound,
-  setInferrenceButton,
-  activity,
-  longPrompt,
-  setTextInference,
-  switchPromptFunction,
-  promptLengthValue
-}) => {
-  
+const Buttons = () => {
+  const {
+    setPlaySound,
+    setInferrenceButton,
+    activity,
+    longPrompt,
+    setTextInference,
+    switchPromptFunction,
+    promptLengthValue
+  } = useAppStore(state => ({
+    setPlaySound: state.setPlaySound,
+    setInferrenceButton: state.setInferrenceButton,
+    activity: state.activity,
+    longPrompt: state.longPrompt,
+    setTextInference: state.setTextInference,
+    switchPromptFunction: state.switchPromptFunction,
+    promptLengthValue: state.promptLengthValue,
+  }));
+
   const setThePromptValue = () => {
     switchPromptFunction();
   }

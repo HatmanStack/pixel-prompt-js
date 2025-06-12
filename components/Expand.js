@@ -1,7 +1,9 @@
 import React from "react";
 import { StyleSheet, Pressable, Image, Text, View } from "react-native";
+import useAppStore from '../store/appStore';
 
-const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
+const Expand = ({ isGuidance, visible, toggleVisibility }) => {
+  const setPlaySound = useAppStore((state) => state.setPlaySound);
   const rightImage = require("../assets/right.png");
   const downImage = require("../assets/down.png");
 

@@ -50,15 +50,25 @@ const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, onL
   );
 });
 
+import useAppStore from '../store/appStore';
+
 // --- Main Simplified Image Grid Component ---
 const ImageGrid = ({
-  imageSource,
-  columnCount = 3,
-  setSelectedImageIndex,
-  selectedImageIndex,
-  setPlaySound,
   containerWidth,// External loading status (e.g., from server/generation)
 }) => {
+  const {
+    imageSource,
+    columnCount,
+    setSelectedImageIndex,
+    selectedImageIndex,
+    setPlaySound,
+  } = useAppStore(state => ({
+    imageSource: state.imageSource,
+    columnCount: state.columnCount,
+    setSelectedImageIndex: state.setSelectedImageIndex,
+    selectedImageIndex: state.selectedImageIndex,
+    setPlaySound: state.setPlaySound,
+  }));
 
   // State to track if each individual image has loaded its source
   // Using an object keyed by index for easier updates with FlatList
@@ -136,12 +146,14 @@ const ImageGrid = ({
   );
 };
 
+import { colors as themeColors } from '../../styles/theme'; // Import theme colors
+
 // --- Styles ---
-const colors = {
-  backgroundColor: "#25292e",
-  white: "#FFFFFF",
-  highlightBorder: "#B58392",
-};
+// const colors = { // Remove local colors object
+//   backgroundColor: "#25292e",
+//   white: "#FFFFFF",
+//   highlightBorder: "#B58392",
+// };
 
 const styles = StyleSheet.create({
   gridContainer: {
@@ -168,7 +180,7 @@ const styles = StyleSheet.create({
     position: 'relative', // Needed for absolute positioning of children
   },
   selectedGridItem: {
-    borderColor: colors.highlightBorder,
+    borderColor: themeColors.highlightBorder, // Use theme color
     borderWidth: 3,
   },
   // Added container specifically for Image and Loader
@@ -194,7 +206,7 @@ const styles = StyleSheet.create({
     // borderRadius: 8, // Inherit from gridItem if needed, or set here
   },
   noImagesText: {
-    color: colors.white,
+    color: themeColors.text, // Use theme color (renamed from white)
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
