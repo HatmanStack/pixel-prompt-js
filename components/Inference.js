@@ -1,5 +1,22 @@
 import { useEffect, useState } from "react";
-const AWS = require("aws-sdk"); 
+const AWS = require("aws-sdk");
+
+// Initialize AWS clients once
+const s3Client = new AWS.S3({
+  region: process.env.EXPO_PUBLIC_AWS_REGION,
+  accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
+  secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
+});
+
+const lambdaClient = new AWS.Lambda({
+  region: process.env.EXPO_PUBLIC_AWS_REGION,
+  accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
+  secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
+  httpOptions: {
+    timeout: 60000,
+  },
+});
+
 const placeholderImage = require('../assets/avocado.jpg'); // Or a dedicated loading image asset
 const errorImage = require('../assets/add_image.png');
 const trollImages = require('../assets/trolls.json');
@@ -49,14 +66,6 @@ const Inference = ({
   useEffect(() => {
     const fetchGalleryImages = async () => {
       try {
-        const AWS = require("aws-sdk");
-    
-        const s3 = new AWS.S3({
-          region: process.env.EXPO_PUBLIC_AWS_REGION,
-          accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
-          secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
-        });
-    
         // First, get all keys in the group-images/ folder
         const params = {
           Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
@@ -65,7 +74,7 @@ const Inference = ({
         };
         
         //console.log("Fetching folders in group-images/");
-        const folderData = await s3.listObjectsV2(params).promise();
+        const folderData = await s3Client.listObjectsV2(params).promise();
         
         // Extract folder names from CommonPrefixes (S3's way of representing folders)
         const folders = folderData.CommonPrefixes?.map(prefix => prefix.Prefix) || [];
@@ -76,15 +85,14 @@ const Inference = ({
         setImageSource(Array(folders.length).fill(placeholderImage));
         
         // For each folder, get a random image
-        for (const folder of folders) {
+        const imageProcessingPromises = folders.map(async (folder, folderIndex) => {
           // Get all images in this folder
           const folderParams = {
             Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
             Prefix: folder
           };
           
-          
-          const imagesData = await s3.listObjectsV2(folderParams).promise();
+          const imagesData = await s3Client.listObjectsV2(folderParams).promise();
           
           if (imagesData.Contents && imagesData.Contents.length > 0) {
             // Filter out non-image files
@@ -92,7 +100,7 @@ const Inference = ({
               .filter(item => !item.Key.endsWith('/'))
               .map(item => item.Key);
             
-            if (imageKeys.length === 0) continue;
+            if (imageKeys.length === 0) return;
             
             // Select a random image from this folder
             const randomIndex = Math.floor(Math.random() * imageKeys.length);
@@ -111,7 +119,6 @@ const Inference = ({
               const objectData = await response.json(); // If you're expecting JSON
               const jsonData = objectData; 
               
-              
               // Convert base64 to Blob URL
               const base64Data = jsonData.base64image;
               const base64Clean = base64Data.includes('base64,') 
@@ -123,13 +130,7 @@ const Inference = ({
               
               if (blob) {
                 const objectURL = URL.createObjectURL(blob);
-                
-                // Find the correct folder index
-                const folderIndex = folders.indexOf(folder);
-                
-                // IMPORTANT: Only update the specific folder's loading state and image
-                // Without touching the loading states of other folders
-                
+
                 if (folderIndex !== -1) {
                   setImageSource(prevImages => {
                     const newImages = [...prevImages];
@@ -142,18 +143,18 @@ const Inference = ({
                     newFolders[folderIndex] = folder;
                     return newFolders;
                   });
-                  
                 }
               } else {
                 // Handle blob creation error
                 console.error(`Error creating blob for ${randomKey}`);
-               
               }
             } catch (error) {
               console.error(`Error processing ${randomKey}:`, error);
             }
           }
-        }
+        });
+
+        await Promise.allSettled(imageProcessingPromises);
         
         // After all folders are processed
         if (folders.length > 0) {
@@ -162,8 +163,6 @@ const Inference = ({
         
       } catch (error) {
         console.error("Error fetching images from S3:", error);
-        // Handle overall error - set all loading states to false
-        
       }
     };
   
@@ -171,36 +170,24 @@ const Inference = ({
   }, []);
 
   useEffect(() => {
-    
     const fetchImagesFromS3 = async () => {
-      
       if(selectedImageIndex !== null && selectedImageIndex !== undefined) {
         setGalleryLoaded(false);
         const selectedFolder = folderList[selectedImageIndex];
-        //console.log("Selected folder:", selectedFolder);
-        const AWS = require("aws-sdk");
         setActivity(true); 
         setLoadingStatus(Array(models.length).fill(true));
         setInferredImage(Array(models.length).fill(placeholderImage));
         const loadingPrompts = Array(models.length).fill("Loading...");
         setReturnedPrompt(loadingPrompts);
        
-        const s3 = new AWS.S3({
-          region: process.env.EXPO_PUBLIC_AWS_REGION,
-          accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
-          secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
-        });
-
         const params = {
           Bucket: process.env.EXPO_PUBLIC_S3_BUCKET,
           Prefix: selectedFolder
         };
         
-        const data = await s3.listObjectsV2(params).promise();
+        const data = await s3Client.listObjectsV2(params).promise();
         
-        for (const item of data.Contents) {
-         
-          
+        const imageProcessingPromises = data.Contents.map(async (item) => {
           try {
             const objectUrlCF = `https://${cloudFrontDomain}/${item.Key}`;
             
@@ -208,23 +195,16 @@ const Inference = ({
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const objectData = await response.json(); // If you're expecting JSON
+            const objectData = await response.json();
             const jsonData = objectData; 
             
-          
             const base64Data = jsonData.base64image;
             const base64Clean = base64Data.includes('base64,') 
               ? base64Data.split('base64,')[1]  
               : base64Data; 
             const prompt = jsonData.returnedPrompt;
             
-            // Find the correct model index based on the prompt content
-            let modelIndex = 0; // Default to first position if no match found
-            
-              
-            
-            // Check which model this prompt belongs to
-            
+            let modelIndex = 0;
             for (let i = 0; i < models.length; i++) {
               if (prompt.includes(models[i])) {
                 modelIndex = i;
@@ -232,46 +212,37 @@ const Inference = ({
               }
             }
             
-            const mimeType = 'image/png'; // Or determine dynamically if possible
+            const mimeType = 'image/png';
             const blob = base64ToBlob(base64Clean, mimeType);
 
             if (blob) {
                 const objectURL = URL.createObjectURL(blob);
-                
                 setInferredImage(prevImages => {
                   const newImages = [...prevImages];
-                  // --- Revoke previous URL if necessary! See point 3 ---
                   const oldUrl = newImages[modelIndex];
                   if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(oldUrl);
                   }
-                  // --- End Revocation ---
                   newImages[modelIndex] = objectURL;
                   return newImages;
                 });
             } else {
-                
                 setInferredImage(prevImages => {
                   const newImages = [...prevImages];
-                  // Revoke previous if needed
                   const oldUrl = newImages[modelIndex];
                   if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
                       URL.revokeObjectURL(oldUrl);
                   }
-                  newImages[modelIndex] = errorImage; // Your static error image path
+                  newImages[modelIndex] = errorImage;
                   return newImages;
                 });
             }
-            // Update state with the image/prompt at the correct index
             setReturnedPrompt(prevPromptList => {
               const newPrompts = [...prevPromptList];
               newPrompts[modelIndex] = prompt;
               return newPrompts;
             });
             
-           
-            
-            // Also update loading status to show image is loaded
             setLoadingStatus(prevStatus => {
               const newStatus = [...prevStatus];
               newStatus[modelIndex] = false;
@@ -280,25 +251,20 @@ const Inference = ({
             
           } catch (error) {
             console.error(`Error processing ${item.Key}:`, error);
-            continue;
+            // Decide how to handle individual errors, e.g., set specific error states
           }
-        }
-        setLoadingStatus(prevStatus => {
-          const newStatus = [...prevStatus];
-          newStatus[selectedImageIndex] = false; // Mark this index as not loading
-          return newStatus;
         });
-        setLoadingStatus(Array(models.length).fill(false)); // Set all loading states to false
 
-        // Set prompts for any images that are still placeholders
+        await Promise.allSettled(imageProcessingPromises);
+
+        setLoadingStatus(Array(models.length).fill(false));
+
         setInferredImage(prevImages => {
           const newImages = [...prevImages];
           newImages.forEach((image, index) => {
-            // If the image is still the placeholder image
             if (image === placeholderImage) {
               setReturnedPrompt(prevPrompts => {
                 const newPrompts = [...prevPrompts];
-                // Set the prompt to indicate which model had no image
                 newPrompts[index] = `No image found for model: ${models[index]}`;
                 return newPrompts;
               });
@@ -306,12 +272,11 @@ const Inference = ({
           });
           return newImages;
         });
-        setGalleryLoaded(true); // Set gallery loaded to true after processing all images
-        setActivity(false); // Reset activity state
+        setGalleryLoaded(true);
+        setActivity(false);
       }
     };
   
-
     fetchImagesFromS3();
   }, [selectedImageIndex]);
 
@@ -390,32 +355,16 @@ const Inference = ({
         setModelMessage("Please enter a prompt before inferring.");
         return;
       }
-      // Configure AWS Lambda
-      const lambda = new AWS.Lambda({
-        region: process.env.EXPO_PUBLIC_AWS_REGION,
-        accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
-        secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
-        httpOptions: {
-          timeout: 60000 
-        }
-      });
-
-      let completedRequests = 0;
-      let processingErrorOccurred = false; // Track if any request fails
-
-      setActivity(true); // Indicate processing has started
+      setActivity(true);
       setLoadingStatus(Array(models.length).fill(true));
-      // Optional: Set placeholders immediately if desired
       setInferredImage(Array(models.length).fill(placeholderImage));
       const loadingPrompts = Array(models.length).fill("Loading...");
       setReturnedPrompt(loadingPrompts);
-     
       
       const clientIP = await getClientIP();
-      
-      // --- Process each model ---
-      models.forEach((model, index) => {
-        
+      let processingErrorOccurred = false;
+
+      const modelPromises = models.map(async (model, index) => {
         const params = {
           FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
           InvocationType: "RequestResponse",
@@ -424,143 +373,134 @@ const Inference = ({
             steps: steps,
             guidance: guidance,
             modelID: model,
-            ip: clientIP, 
-            target: time, 
+            ip: clientIP,
+            target: time,
             control: control,
             task: "image"
           }),
         };
 
-       
-        lambda.invoke(params).promise()
-          .then((data) => {
-            let currentImageResult = errorImage; // Default to error image
-            let currentPromptResult = `Error parsing response for ${model}`;
-            
-            try {
-              const jsonHolder = JSON.parse(data.Payload).body;
-              const responseData = JSON.parse(jsonHolder);
-              if (responseData.output && responseData.output === 'Rate limit exceeded') {
-                setModelError(true);
-                setModelMessage('Rate limit exceeded. Please try again later.');
-                setActivity(false);
-                setLoadingStatus(Array(models.length).fill(false));
-                // Return early since we can't proceed with this model
-                return;
-              }
-              if (responseData.output && /Error/.test(responseData.output)){
-                currentImageResult = placeholderImage
-                currentPromptResult = `Model:\n${responseData.model}\n\n${responseData.output}`;
-              }
-              else if (responseData && responseData.output) {
-                currentImageResult = responseData.output;
-                // Decide which prompt to display: original user prompt or model-specific output?
-                // Using original prompt combined with model label for clarity:
-                currentPromptResult = `Model:\n${responseData.model || model}\n\nPrompt:\n${prompt}`;
-              } else {
-                 console.error(`Invalid response structure for ${model}:`, responseData);
-                 processingErrorOccurred = true;
-              }
-            } catch (error) {
-              console.error(`Error parsing JSON response for ${model}:`, error);
+        try {
+          const data = await lambdaClient.invoke(params).promise();
+          let currentImageResult = errorImage;
+          let currentPromptResult = `Error parsing response for ${model}`;
+
+          try {
+            const jsonHolder = JSON.parse(data.Payload).body;
+            const responseData = JSON.parse(jsonHolder);
+
+            if (responseData.output && responseData.output === 'Rate limit exceeded') {
+              setModelError(true);
+              setModelMessage('Rate limit exceeded. Please try again later.');
+              processingErrorOccurred = true; // Mark that an error occurred
+              // No need to set individual state here as it will be handled by Promise.allSettled
+              return { status: 'rejected', reason: 'Rate limit exceeded', model, index };
+            }
+            if (responseData.output && /Error/.test(responseData.output)) {
+              currentImageResult = placeholderImage;
+              currentPromptResult = `Model:\n${responseData.model}\n\n${responseData.output}`;
+            } else if (responseData && responseData.output) {
+              currentImageResult = responseData.output;
+              currentPromptResult = `Model:\n${responseData.model || model}\n\nPrompt:\n${prompt}`;
+            } else {
+              console.error(`Invalid response structure for ${model}:`, responseData);
               processingErrorOccurred = true;
             }
-
-            // --- Update states incrementally using functional updates ---
-            
-            const mimeType = 'image/png'; // Or determine dynamically if possible
-            const blob = base64ToBlob(currentImageResult, mimeType);
-
-            if (blob) {
-                const objectURL = URL.createObjectURL(blob);
-                setInferredImage(prevImages => {
-                  const newImages = [...prevImages];
-                  const oldUrl = newImages[index];
-                  if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(oldUrl);
-                  }
-                  newImages[index] = objectURL;
-                  return newImages;
-                });
-            } else {
-                setInferredImage(prevImages => {
-                  const newImages = [...prevImages];
-                  const oldUrl = newImages[index];
-                  if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
-                      URL.revokeObjectURL(oldUrl);
-                  }
-                  newImages[index] = errorImage; 
-                  return newImages;
-                });
-            }
-
-            setReturnedPrompt(prevPrompts => {
-              const newPrompts = [...prevPrompts];
-              newPrompts[index] = currentPromptResult;
-              return newPrompts;
-            });
-            
-            setLoadingStatus(prevStatus => {
-              const newStatus = [...prevStatus];
-              newStatus[index] = false; 
-              return newStatus;
-            });
-          })
-          .catch((error) => {
-            console.error(`Lambda invocation error for ${model}:`, error);
+          } catch (error) {
+            console.error(`Error parsing JSON response for ${model}:`, error);
             processingErrorOccurred = true;
-            const lambdaErrorPrompt = `Lambda Error: ${model}`;
+          }
 
+          return { status: 'fulfilled', value: { currentImageResult, currentPromptResult, index, model } };
+        } catch (error) {
+          console.error(`Lambda invocation error for ${model}:`, error);
+          processingErrorOccurred = true;
+          return { status: 'rejected', reason: error, model, index };
+        }
+      });
+
+      const results = await Promise.allSettled(modelPromises);
+
+      results.forEach((result, index) => {
+        // Ensure we use the original index from the mapping, not the results array index if they differ
+        // though in this case, they should be the same.
+        const modelIndex = result.status === 'fulfilled' ? result.value.index : result.reason.index !== undefined ? result.reason.index : index;
+
+        if (result.status === 'fulfilled') {
+          const { currentImageResult, currentPromptResult } = result.value;
+          const mimeType = 'image/png';
+          const blob = base64ToBlob(currentImageResult, mimeType);
+
+          if (blob) {
+            const objectURL = URL.createObjectURL(blob);
             setInferredImage(prevImages => {
               const newImages = [...prevImages];
-              newImages[index] = errorImage;
+              const oldUrl = newImages[modelIndex];
+              if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(oldUrl);
+              }
+              newImages[modelIndex] = objectURL;
               return newImages;
             });
-
-            setReturnedPrompt(prevPrompts => {
-              const newPrompts = [...prevPrompts];
-              newPrompts[index] = lambdaErrorPrompt;
-              return newPrompts;
-            });
-            
-            setLoadingStatus(prevStatus => {
-              const newStatus = [...prevStatus];
-              newStatus[index] = false; // Mark this index as not loading
-              return newStatus;
-            });
-
-          })
-          .finally(() => {
-            completedRequests++;
-            // Check if ALL requests are done
-            if (completedRequests === models.length) {
-              setActivity(false); // Reset activity state
-              setInferrenceButton(false);
-              setTime(new Date().toLocaleString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-              }).replace(/[/:,\s]/g, '-'));
-              if (processingErrorOccurred) {
-                setModelMessage("One or more images failed to generate.");
-                // setModelError(true); // Uncomment if you want a general error flag
+          } else {
+            setInferredImage(prevImages => {
+              const newImages = [...prevImages];
+              const oldUrl = newImages[modelIndex];
+              if (oldUrl && typeof oldUrl === 'string' && oldUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(oldUrl);
               }
-            }
+              newImages[modelIndex] = errorImage;
+              return newImages;
+            });
+          }
+          setReturnedPrompt(prevPrompts => {
+            const newPrompts = [...prevPrompts];
+            newPrompts[modelIndex] = currentPromptResult;
+            return newPrompts;
           });
-      }); // End models.forEach
+        } else {
+          // Handle rejected promise
+          const lambdaErrorPrompt = `Lambda Error: ${result.reason.model || models[modelIndex]}`;
+          setInferredImage(prevImages => {
+            const newImages = [...prevImages];
+            newImages[modelIndex] = errorImage;
+            return newImages;
+          });
+          setReturnedPrompt(prevPrompts => {
+            const newPrompts = [...prevPrompts];
+            newPrompts[modelIndex] = lambdaErrorPrompt;
+            return newPrompts;
+          });
+        }
+        setLoadingStatus(prevStatus => {
+          const newStatus = [...prevStatus];
+          newStatus[modelIndex] = false;
+          return newStatus;
+        });
+      });
+
+      setActivity(false);
+      setInferrenceButton(false);
+      setTime(new Date().toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      }).replace(/[/:,\s]/g, '-'));
+
+      if (processingErrorOccurred) {
+        setModelMessage("One or more images failed to generate or a rate limit was hit.");
+        // Optionally set a general error flag if needed: setModelError(true);
+      }
     }
-      // Start processing models
-    
-  }
-  processModels(); 
-   // Call the function to start processing
+  }; // processModels function ends
+
+  useEffect(() => {
+    if (inferrenceButton) {
+      processModels();
+    }
   }, [inferrenceButton]); // End useEffect for Inference Logic
 
-  // Return null or some minimal JSX as this is a logic component
+  return null;
   return null;
 };
 

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext, memo } from "react"; // Import memo
+import AppContext from "../AppContext"; // Import AppContext
 import { StyleSheet, Pressable, Image, Text, View } from "react-native";
 
-const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
+const Expand = ({ isGuidance, visible, toggleVisibility }) => {
+  const { setPlaySound } = useContext(AppContext);
   const rightImage = require("../assets/right.png");
   const downImage = require("../assets/down.png");
 
@@ -11,8 +13,8 @@ const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
         <Pressable
           style={styles.expandButton}
           onPress={() => {
-            setPlaySound("expand");
-            toggleVisibility();
+            if (setPlaySound) setPlaySound("expand");
+            toggleVisibility(); // This is a direct prop
           }}
         >
           <Image
@@ -73,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Expand;
+export default memo(Expand); // Wrap with memo

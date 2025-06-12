@@ -1,10 +1,10 @@
-import * as React from "react";
+import React, { useState, memo } from "react"; // Import useState and memo from React
 import { StyleSheet, View, Text } from "react-native";
 import Slider from "@react-native-community/slider";
 
-export default function SliderComponent({ setSteps, setGuidance, setControl }) {
-  const [samplingValue, setSamplingValue] = React.useState(28);
-  const [guidanceValue, setGuidanceValue] = React.useState(5);
+const SliderComponent = ({ setSteps, setGuidance, setControl }) => { // Changed to const arrow function
+  const [samplingValue, setSamplingValue] = useState(28); // Use useState directly
+  const [guidanceValue, setGuidanceValue] = useState(5); // Use useState directly
 
   // Handle sampling steps change
   const handleStepChange = (x) => {
@@ -17,7 +17,6 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
     setGuidanceValue(parseFloat(x.toFixed(2)));
     setGuidance(parseFloat(x.toFixed(2)));
   };
-
 
   return (
     <View style={styles.container}>
@@ -47,10 +46,10 @@ export default function SliderComponent({ setSteps, setGuidance, setControl }) {
         onValueChange={handleGuidanceChange}
       />
       <Text style={styles.sliderValue}>{guidanceValue}</Text>
-      
+
     </View>
   );
-}
+};
 
 const colors = {
   color: "#FFFFFF",
@@ -83,3 +82,5 @@ const styles = StyleSheet.create({
     fontFamily: "Sigmar",
   },
 });
+
+export default memo(SliderComponent); // Wrap with memo

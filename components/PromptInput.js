@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext, memo } from "react"; // Added useContext and memo
+import AppContext from "../AppContext"; // Import AppContext
 import {
   Pressable,
   StyleSheet,
@@ -8,7 +9,8 @@ import {
   Dimensions
 } from "react-native";
 
-export default function PromptInputComponent({ setPlaySound, setPrompt, inferredPrompt }) {
+const PromptInputComponent = ({ inferredPrompt }) => { // Changed to const arrow function
+  const { setPlaySound, setPrompt } = useContext(AppContext); // Consuming from context
   const [text, setText] = React.useState("");
 
   const textInputStyle = {
@@ -19,13 +21,21 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
   useEffect(() => {
     if (inferredPrompt) {
       setText(inferredPrompt);
-      setPrompt(inferredPrompt);
+      if (setPrompt) { // Check if setPrompt from context is available
+        setPrompt(inferredPrompt);
+      }
+    } else if (inferredPrompt === null || inferredPrompt === "") {
+      // If inferredPrompt is explicitly cleared, clear local text.
+      setText("");
+      // if (setPrompt) setPrompt(""); // Optional: clear context prompt as well
     }
-  }, [inferredPrompt]);
+  }, [inferredPrompt, setPrompt]); // Added setPrompt to dependency array
 
   const handleTextChange = (x) => {
     setText(x);
-    setPrompt(x);
+    if (setPrompt) { // Check if setPrompt from context is available
+      setPrompt(x);
+    }
   };
 
   return (
@@ -55,8 +65,12 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
         ]}
         onPress={() => {
           setText("");
-          setPrompt("");
-          setPlaySound("click");
+          if (setPrompt) { // Check if setPrompt from context is available
+            setPrompt("");
+          }
+          if (setPlaySound) { // Check if setPlaySound from context is available
+            setPlaySound("click");
+          }
         }}
       >
         <Image
@@ -70,7 +84,7 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
       </Pressable>
     </View>
   );
-}
+}; // Added semicolon for const arrow function style
 
 const colors = {
   backgroundColor: "#FFFFFF",
@@ -97,3 +111,5 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+
+export default memo(PromptInputComponent); // Wrapped with memo

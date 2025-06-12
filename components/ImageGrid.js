@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react"; // Import useState, useEffect, useCallback
+import React, { useState, useEffect, useCallback, useContext, memo } from "react"; // Import memo
+import AppContext from "../AppContext"; // Import AppContext
 import {
   Pressable,
   Image,
@@ -52,65 +53,56 @@ const GridItem = React.memo(({ source, index, onPress, isSelected, itemSize, onL
 
 // --- Main Simplified Image Grid Component ---
 const ImageGrid = ({
+  // Direct props
   imageSource,
-  columnCount = 3,
   setSelectedImageIndex,
   selectedImageIndex,
-  setPlaySound,
-  containerWidth,// External loading status (e.g., from server/generation)
+  containerWidth,
 }) => {
+  const {
+    setPlaySound,
+    columnCount,
+    // galleryLoaded // Available from context if needed by ImageGrid's logic
+  } = useContext(AppContext);
 
-  // State to track if each individual image has loaded its source
-  // Using an object keyed by index for easier updates with FlatList
   const [imageLoadedStatus, setImageLoadedStatus] = useState({});
 
-  // Calculate item size based on current column count
-  const itemSize = calculateItemSize(columnCount, containerWidth);
+  // Calculate item size based on current column count from context
+  const itemSize = calculateItemSize(columnCount || 3, containerWidth); // Default columnCount to 3 if not in context initially
 
-  // Reset local loaded status when the source array changes fundamentally
   useEffect(() => {
     setImageLoadedStatus({});
   }, [imageSource]);
 
-  // Callback for GridItem to report when its image has loaded
-  // Use useCallback to prevent unnecessary re-renders of GridItem
   const handleImageLoaded = useCallback((index) => {
     setImageLoadedStatus(prevStatus => ({
       ...prevStatus,
-      [index]: true // Mark this index as loaded
+      [index]: true,
     }));
-  }, []); // Empty dependency array means this function is created once
+  }, []);
 
-  const onImagePress = (index) => {
-    setPlaySound("click");
-    // Check if the image has actually loaded before allowing selection
-    // Or remove this check if you want to allow selection even while loading
-    
+  const onImagePress = useCallback((index) => {
+    if (setPlaySound) setPlaySound("click");
     if (imageLoadedStatus[index] && index !== selectedImageIndex) {
       setSelectedImageIndex(index);  
     }
-  };
+  }, [setPlaySound, imageLoadedStatus, selectedImageIndex, setSelectedImageIndex]);
 
-  // Render function for each item in the FlatList
   const renderItem = useCallback(({ item: source, index }) => {
-     // Determine if the loader should be shown for this item
-     
-
     return (
         <GridItem
             source={source}
             index={index}
-            onPress={onImagePress}
+            onPress={onImagePress} // Now memoized
             isSelected={index === selectedImageIndex}
             itemSize={itemSize}
-             // Pass loading status down
-            onLoadCallback={handleImageLoaded} // Pass the loading callback down
+            onLoadCallback={handleImageLoaded}
         />
     );
-  // Add dependencies for useCallback to ensure it updates correctly
-  }, [columnCount, selectedImageIndex,  imageLoadedStatus, itemSize, onImagePress, handleImageLoaded]);
+  }, [itemSize, selectedImageIndex, onImagePress, handleImageLoaded]); // Dependencies: itemSize, selectedImageIndex, onImagePress, handleImageLoaded
 
   const isEmpty = !imageSource || imageSource.length === 0;
+  // columnCount from context is used in key for FlatList and numColumns
   return (
     <View style={styles.gridContainer}>
       {!isEmpty ? (
@@ -123,7 +115,7 @@ const ImageGrid = ({
           initialNumToRender={12}
           maxToRenderPerBatch={12}
           windowSize={21}
-          removeClippedSubviews={false}
+          removeClippedSubviews={true}
           showsVerticalScrollIndicator={true}
           style={[styles.flatList, { width: containerWidth || '100%' }]}
           contentContainerStyle={styles.flatListContent}
@@ -210,4 +202,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageGrid;
+export default memo(ImageGrid); // Wrap with memo

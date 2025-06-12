@@ -1,5 +1,6 @@
 // Buttons.js
-import React from "react";
+import React, { useContext, memo } from "react"; // Import memo
+import AppContext from "../AppContext"; // Import AppContext
 import {
   StyleSheet,
   View,
@@ -10,22 +11,26 @@ import {
 } from "react-native";
 
 const Buttons = ({
-  setPlaySound,
-  setInferrenceButton,
-  activity,
+  // Props that will remain direct
   longPrompt,
   setTextInference,
   switchPromptFunction,
   promptLengthValue
 }) => {
+  const {
+    setPlaySound,
+    setInferrenceButton,
+    activity
+  } = useContext(AppContext);
   
   const setThePromptValue = () => {
+    // switchPromptFunction is a direct prop, no change here
     switchPromptFunction();
   }
 
   return (
     <>
-      {activity ? (
+      {activity ? ( // activity from context
         <ActivityIndicator
           size="large"
           color="#B58392"
@@ -33,22 +38,21 @@ const Buttons = ({
         />
       ) : (
         <>
-          {longPrompt ? (
+          {longPrompt ? ( // longPrompt is a direct prop
             <>
               <View style={[styles.rowContainer]}>
                 <Pressable
                   onPress={() => {
-                    
-                    setTextInference(true);
-                    setPlaySound("click");
+                    setTextInference(true); // setTextInference is a direct prop
+                    if (setPlaySound) setPlaySound("click"); // setPlaySound from context
                   }}
                   style={({ pressed }) => [
                     {
-                      backgroundColor: pressed ? "#958DA5" : "#9DA58D",
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      margin: 10,
+                      backgroundColor: pressed ? "#958DA5" : "#9DA58D", // Color logic remains
+                      width: 40,       // Style remains
+                      height: 40,      // Style remains
+                      borderRadius: 20,  // Style remains
+                      margin: 10,       // Style remains
                     },
                   ]}
                 ></Pressable>
@@ -57,7 +61,7 @@ const Buttons = ({
                     <Text
                       style={[
                         {
-                          color: promptLengthValue ? "#FFFFFF" : "#9FA8DA",
+                          color: promptLengthValue ? "#FFFFFF" : "#9FA8DA", // promptLengthValue is direct prop
                           marginRight: 15,
                         },
                         styles.sliderText,
@@ -68,7 +72,7 @@ const Buttons = ({
                     <Text
                       style={[
                         {
-                          color: promptLengthValue ? "#9FA8DA" : "#FFFFFF",
+                          color: promptLengthValue ? "#9FA8DA" : "#FFFFFF", // promptLengthValue is direct prop
                           marginRight: 15,
                         },
                         styles.sliderText,
@@ -84,8 +88,8 @@ const Buttons = ({
                     thumbColor="#B58392"
                     activeThumbColor="#6750A4"
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={setThePromptValue}
-                    value={promptLengthValue}
+                    onValueChange={setThePromptValue} // Uses direct prop switchPromptFunction
+                    value={promptLengthValue} // direct prop
                   />
                   </View>
                 </View>
@@ -94,8 +98,8 @@ const Buttons = ({
           ) : (
             <Pressable
               onPress={() => {
-                setTextInference(true);
-                setPlaySound("click");
+                setTextInference(true); // direct prop
+                if (setPlaySound) setPlaySound("click"); // from context
               }}
               style={({ pressed }) => [
                 { backgroundColor: pressed ? "#958DA5" : "#9DA58D" },
@@ -111,12 +115,12 @@ const Buttons = ({
           )}
           <Pressable
             onPress={() => {
-              setInferrenceButton(true);
-              setPlaySound("click");
+              if (setInferrenceButton) setInferrenceButton(true); // from context
+              if (setPlaySound) setPlaySound("click"); // from context
             }}
             style={({ pressed }) => [
               {
-                backgroundColor: pressed ? "#9DA58D" : "#958DA5",
+                backgroundColor: pressed ? "#9DA58D" : "#958DA5", // Color logic remains
                 marginBottom: 20,
               },
               styles.button,
@@ -193,4 +197,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Buttons;
+export default memo(Buttons); // Wrap with memo

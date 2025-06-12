@@ -1,11 +1,25 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useContext, memo } from 'react'; // Import memo
 import { View, Image, Pressable, StyleSheet, Animated, Text, ActivityIndicator, Dimensions } from 'react-native';
+import AppContext from '../AppContext'; // Import AppContext
 const placeholderImage = require('../assets/avocado.jpg'); 
 
-const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, inferrenceButton, galleryLoaded}) => {
+const NewImage = () => {
+  const {
+    inferredImage,
+    setPlaySound,
+    returnedPrompt,
+    loadingStatus,
+    // inferrenceButton, // Confirm if needed, was in original props
+    // galleryLoaded     // Confirm if needed, was in original props
+  } = useContext(AppContext);
+
+  // Initialize imageLoadedStatus based on the length of inferredImage or a default (e.g., 9)
+  // This ensures it's correctly sized even if inferredImage is initially null or different length.
+  const initialLoadStatusSize = Array.isArray(inferredImage) ? inferredImage.length : 9;
+  const [imageLoadedStatus, setImageLoadedStatus] = useState(Array(initialLoadStatusSize).fill(true));
+
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState(null);
-  const [imageLoadedStatus, setImageLoadedStatus] = useState(Array(9).fill(true));
   
   // Get window dimensions
   const windowWidth = Dimensions.get('window').width;
@@ -18,36 +32,53 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   );
 
   useEffect(() => {
-    // Store the current URLs that this component instance rendered
-    const currentUrls = Array.isArray(inferredImage)
-        ? inferredImage.filter(url => typeof url === 'string' && url.startsWith('blob:'))
-        : (typeof inferredImage === 'string' && inferredImage.startsWith('blob:') ? [inferredImage] : []);
+    // Identify all blob URLs from the inferredImage prop from context
+    const currentBlobUrls = (Array.isArray(inferredImage) ? inferredImage : [inferredImage])
+      .filter(url => typeof url === 'string' && url.startsWith('blob:'));
 
-    // Return a cleanup function that runs when the component unmounts
-    // or BEFORE the effect runs again (due to inferredImage changing)
-    if(!inferrenceButton && galleryLoaded) {
-      return () => {
-          // console.log("Cleaning up object URLs:", currentUrls);
-          currentUrls.forEach(url => URL.revokeObjectURL(url));
-      };
+    // Return a cleanup function that will run when inferredImage changes or the component unmounts
+    return () => {
+      if (currentBlobUrls.length > 0) {
+        // console.log("NewImage.js: Cleaning up object URLs:", currentBlobUrls);
+        currentBlobUrls.forEach(url => URL.revokeObjectURL(url));
+      }
+    };
+  }, [inferredImage]); // The effect re-runs if inferredImage from context changes
+
+  // Adjust imageLoadedStatus array size if inferredImage length changes
+  useEffect(() => {
+    if (Array.isArray(inferredImage)) {
+      setImageLoadedStatus(prevStatus => {
+        const newStatus = Array(inferredImage.length).fill(true);
+        // Preserve existing statuses if lengths match or if needed, otherwise reset
+        // This simple reset assumes new images mean new loading states.
+        return newStatus;
+      });
     }
-}, [inferredImage]);
+  }, [inferredImage]);
 
   const handleImageLoaded = (index) => {
-    const newStatus = [...imageLoadedStatus];
-    newStatus[index] = true;
-    setImageLoadedStatus(newStatus);
+    setImageLoadedStatus(prevStatus => {
+      const newStatus = [...prevStatus];
+      if (index < newStatus.length) { // Boundary check
+        newStatus[index] = true;
+      }
+      return newStatus;
+    });
   };
+
   // Animation function to expand/collapse images
   const handleImagePress = (index) => {
     // Only set the current prompt when actually expanding an image
     if (expandedImageIndex !== index) {
-      if (Array.isArray(returnedPrompt)) {
+      if (Array.isArray(returnedPrompt) && index < returnedPrompt.length) {
         setCurrentPrompt(returnedPrompt[index]);
+      } else {
+        setCurrentPrompt(null); // Reset if no valid prompt
       }
     }
     
-    setPlaySound("click");
+    if (setPlaySound) setPlaySound("click"); // Check if setPlaySound is available
     
     if (expandedImageIndex === index) {
       // Collapse this image
@@ -84,7 +115,7 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
     return (
       <View style={styles.placeholderContainer}>
         <Image 
-          source={require("../assets/avocado.jpg")} 
+          source={placeholderImage} // Use the imported constant
           style={styles.placeholderImage}
           resizeMode="contain"
         />
@@ -93,7 +124,7 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   }
 
   // If an image is expanded, only show that image
-  if (expandedImageIndex !== null) {
+  if (expandedImageIndex !== null && inferredImage[expandedImageIndex]) {
     const expandedImage = inferredImage[expandedImageIndex];
     
     return (
@@ -107,13 +138,13 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
               styles.expandedImageContainer,
               pressed && { opacity: 0.9 }
             ]}
-            onPress={() => handleImagePress(expandedImageIndex)}
+            onPress={() => handleImagePress(expandedImageIndex)} // Use the index
           >
             <Image
                source={
-                typeof expandedImage === "number" || expandedImage === placeholderImage
-                  ? placeholderImage // Use placeholderImage if it's an asset
-                  : { uri: expandedImage } // Use the URI for other cases
+                typeof expandedImage === "number" || expandedImage === placeholderImage // Check against imported constant
+                  ? placeholderImage
+                  : { uri: expandedImage }
               }
               style={styles.expandedImage}
               resizeMode="contain"
@@ -140,52 +171,54 @@ const NewImage = ({ inferredImage, setPlaySound, returnedPrompt, loadingStatus, 
   return (
     <View style={[
       styles.imageGrid, 
-      isSmallScreen && { height: '33%' }
+      isSmallScreen && { height: '33%' } // Consider if this fixed height is always desirable
     ]}>
-      {inferredImage.map((image, index) => (
-        <Pressable 
-          key={index} 
-          style={({pressed}) => [
-            styles.gridItem,
-            isSmallScreen && styles.gridItemSmall,
-            pressed && { opacity: 0.8 }
-          ]}
-          onPress={() => handleImagePress(index)}
-        >
-          <View style={styles.imageContainer}>
-            <Image
-              source={
-                typeof image === 'string' 
-                  ? { uri: image }      
-                  : image                
-              }
-              style={styles.gridImageStyle}
-              resizeMode="cover"
-              onLoad={() => handleImageLoaded(index)}
-            />
+      {inferredImage.map((image, index) => {
+        // Check if image is a valid source or placeholder
+        const imageSourceUri = typeof image === 'string' ? { uri: image } : image;
+        // Determine loading state, checking bounds for loadingStatus and imageLoadedStatus
+        const isLoading = (loadingStatus && index < loadingStatus.length && loadingStatus[index] === true) ||
+                          (index < imageLoadedStatus.length && !imageLoadedStatus[index]);
+
+        return (
+          <Pressable
+            key={index}
+            style={({pressed}) => [
+              styles.gridItem,
+              isSmallScreen && styles.gridItemSmall,
+              pressed && { opacity: 0.8 }
+            ]}
+            onPress={() => handleImagePress(index)}
+          >
+            <View style={styles.imageContainer}>
+              <Image
+                source={imageSourceUri}
+                style={styles.gridImageStyle}
+                resizeMode="cover"
+                onLoad={() => handleImageLoaded(index)}
+              />
+
+              {isLoading && (
+                <View style={styles.loaderContainer}>
+                  <ActivityIndicator size="large" color="#B58392" />
+                </View>
+              )}
+            </View>
             
-            {/* Show loader if the server is still loading or if the image is not yet rendered */}
-            {(loadingStatus && loadingStatus[index] === true || !imageLoadedStatus[index]) && (
-              <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#B58392" />
+            {isSmallScreen && expandedImageIndex === index && Array.isArray(returnedPrompt) && index < returnedPrompt.length && returnedPrompt[index] && (
+              <View style={styles.inlinePromptContainer}>
+                <Text
+                  style={styles.inlinePromptText}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {returnedPrompt[index]}
+                </Text>
               </View>
             )}
-          </View>
-          
-          {/* Only show prompt text if this is expanded and we're on a small screen */}
-          {isSmallScreen && expandedImageIndex === index && Array.isArray(returnedPrompt) && returnedPrompt[index] && (
-            <View style={styles.inlinePromptContainer}>
-              <Text 
-                style={styles.inlinePromptText}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {returnedPrompt[index]}
-              </Text>
-            </View>
-          )}
-        </Pressable>
-      ))}
+          </Pressable>
+        );
+      })}
     </View>
   );
 };
@@ -301,4 +334,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default NewImage;
+export default memo(NewImage); // Wrap with memo

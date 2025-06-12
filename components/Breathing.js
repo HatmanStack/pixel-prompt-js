@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from "react"; // Import memo
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 
-export default function Breathing() {
+const BreathingComponent = () => { // Changed to const and arrow function
   // Create an array of Animated values using useRef
   const animatedValues = useRef(
     [...Array(12)].map(() => new Animated.Value(0))
@@ -128,7 +128,7 @@ export default function Breathing() {
       </Text>
     </View>
   );
-}
+};
 
 const colors = {
   color: "#6750A4",
@@ -153,3 +153,5 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
 });
+
+export default memo(BreathingComponent); // Wrap with memo
