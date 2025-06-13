@@ -1,19 +1,34 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import {
   Pressable,
   StyleSheet,
   TextInput,
   Image,
   View,
-  Dimensions
 } from "react-native";
+import { useAppStore } from '../stores/useAppStore';
+import { useUIStore } from '../stores/useUIStore';
+import { commonStyles } from '../styles/commonStyles';
+import { colors, spacing } from '../theme';
 
-export default function PromptInputComponent({ setPlaySound, setPrompt, inferredPrompt }) {
+export default function PromptInputComponent() {
   const [text, setText] = React.useState("");
+  
+  // Zustand store hooks
+  const { 
+    prompt, 
+    inferredPrompt, 
+    setPrompt, 
+    setMakeSound 
+  } = useAppStore();
+  
+  const { 
+    isWindowBiggerThanContainer 
+  } = useUIStore();
 
   const textInputStyle = {
-    ...styles.input,
-    width: Dimensions.get('window').width > 500 ? 500 : "100%",
+    ...commonStyles.input,
+    width: isWindowBiggerThanContainer,
   };
 
   useEffect(() => {
@@ -21,15 +36,21 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
       setText(inferredPrompt);
       setPrompt(inferredPrompt);
     }
-  }, [inferredPrompt]);
+  }, [inferredPrompt, setPrompt]);
 
-  const handleTextChange = (x) => {
-    setText(x);
-    setPrompt(x);
-  };
+  const handleTextChange = useCallback((newText) => {
+    setText(newText);
+    setPrompt(newText);
+  }, [setPrompt]);
+
+  const handleClear = useCallback(() => {
+    setText("");
+    setPrompt("");
+    setMakeSound("click");
+  }, [setPrompt, setMakeSound]);
 
   return (
-    <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+    <View style={styles.container}>
       <TextInput
         style={textInputStyle}
         placeholder=""
@@ -38,62 +59,52 @@ export default function PromptInputComponent({ setPlaySound, setPrompt, inferred
         onChangeText={handleTextChange}
         value={text}
         maxLength={20000}
+        accessibilityLabel="Prompt input"
+        accessibilityHint="Enter your image generation prompt here"
       />
       <Pressable
         style={({ pressed }) => [
-          {
-            height: 30,
-            width: 30,
-            backgroundColor: pressed ? "#B58392" : "#3a3c3f",
-            borderRadius: 6,
-            padding: 10,
-            marginTop: 10,
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1,
-          },
+          styles.clearButton,
+          pressed && styles.clearButtonPressed
         ]}
-        onPress={() => {
-          setText("");
-          setPrompt("");
-          setPlaySound("click");
-        }}
+        onPress={handleClear}
+        accessibilityLabel="Clear prompt"
+        accessibilityHint="Clear the current prompt text"
       >
         <Image
           source={require("../assets/close.png")}
-          style={{
-            width: "100%",
-            height: "100%",
-            resizeMode: "contain",
-          }}
+          style={styles.clearIcon}
         />
       </Pressable>
     </View>
   );
 }
 
-const colors = {
-  backgroundColor: "#FFFFFF",
-  borderColor: "#B58392",
-  color: "#000000",
-};
-
 const styles = StyleSheet.create({
-  input: {
-    backgroundColor: colors.backgroundColor,
-    borderColor: colors.borderColor,
-    borderBottomLeftRadius: 4,
-    borderWidth: 4,
-    borderBottomRightRadius: 4,
-    borderStartWidth: 10,
-    borderEndWidth: 10,
-    borderRadius: 6,
-    height: 200,
-    paddingLeft: 10,
-    paddingRight: 10,
-    fontSize: 20,
-    color: colors.color,
-    fontFamily: "Sigmar",
-    marginRight: 10,
+  container: {
+    flexDirection: "row", 
+    alignItems: "flex-end"
+  },
+  
+  clearButton: {
+    height: 30,
+    width: 30,
+    backgroundColor: colors.secondary,
+    borderRadius: spacing.borderRadius.medium,
+    padding: spacing.marginSmall,
+    marginTop: spacing.marginSmall,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  
+  clearButtonPressed: {
+    backgroundColor: colors.accent,
+  },
+  
+  clearIcon: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
   },
 });

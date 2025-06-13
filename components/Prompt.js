@@ -1,88 +1,73 @@
 import { useEffect } from "react";
+import { useAppStore } from '../stores/useAppStore';
+import ModelService from '../services/ModelService';
 import seeds from "../assets/seeds.json";
 
-const PromptInference = ({
-  prompt,
-  textInference,
-  setTextInference,
-  setLongPrompt,
-  setShortPrompt,
-  setInferredPrompt,
-  promptLengthValue,
-  setActivity,
-  setModelError,
-  setModelMessage
-}) => {
+const PromptInference = () => {
+  const {
+    prompt,
+    textInference,
+    promptLengthValue,
+    setTextInference,
+    setLongPrompt,
+    setShortPrompt,
+    setInferredPrompt,
+    setActivity,
+    setModelError,
+  } = useAppStore();
   
   useEffect(() => {
-    if (textInference) {
-      setActivity(true);
-      setModelError(false);
-      let alteredPrompt = "";
-      if (prompt === "Avocado Armchair" || prompt === "") {
-        const randomIndex = Math.floor(Math.random() * seeds.seeds.length);
-        alteredPrompt = seeds.seeds[randomIndex];
-      } else {
-        alteredPrompt = prompt;
-      }
-      
-      const AWS = require('aws-sdk');
-      
-      const lambda = new AWS.Lambda({
-        region: process.env.EXPO_PUBLIC_AWS_REGION,
-        accessKeyId: process.env.EXPO_PUBLIC_AWS_ID,
-        secretAccessKey: process.env.EXPO_PUBLIC_AWS_SECRET,
-      });
-      
-      const params = {
-        FunctionName: process.env.EXPO_PUBLIC_AWS_LAMBDA_FUNCTION,
-        InvocationType: 'RequestResponse',
-        Payload: JSON.stringify({
-          itemString: alteredPrompt,
-          task: "text",
-          ip:'1.1.1.1',
-        })
-      };
-      
-      lambda.invoke(params, (err, data) => {
-        if (err) {
-          console.error("Lambda Error:", err);
-          setModelError(true);
-          setActivity(false);
-          return;
+    if (!textInference) return;
+
+    const generatePrompt = async () => {
+      try {
+        setActivity(true);
+        setModelError(false, "");
+        
+        // Use seed prompt if default or empty
+        let alteredPrompt = prompt;
+        if (prompt === "Avocado Armchair" || prompt === "") {
+          const randomIndex = Math.floor(Math.random() * seeds.seeds.length);
+          alteredPrompt = seeds.seeds[randomIndex];
         }
         
-        try {
-          const jsonHolder = JSON.parse(data.Payload).body;
+        const result = await ModelService.generateTextPrompt(alteredPrompt);
+        
+        if (result.success) {
+          setLongPrompt(result.longPrompt);
+          setShortPrompt(result.shortPrompt);
           
-          
-          const responseData = JSON.parse(jsonHolder);
-          if (responseData.output && responseData.output === 'Rate limit exceeded') {
-            setModelError(true);
-            setModelMessage('Rate limit exceeded. Please try again later.');
-            setActivity(false);
-            // Return early since we can't proceed with this model
-            return;
-          }
-          const longPrompt = responseData.plain;
-          //console.log(longPrompt);
-          setLongPrompt(longPrompt);
-          setShortPrompt(alteredPrompt);
-          if (!promptLengthValue) {
-            setInferredPrompt(alteredPrompt);
+          // Set the appropriate prompt based on current toggle state
+          if (promptLengthValue) {
+            setInferredPrompt(result.longPrompt);
           } else {
-            setInferredPrompt(longPrompt);
+            setInferredPrompt(result.shortPrompt);
           }
-        } catch (error) {
-          console.error("Parse Error:", error);
-          setModelError(true);
         }
+        
+      } catch (error) {
+        console.error("Prompt generation error:", error);
+        setModelError(true, error.message);
+      } finally {
         setActivity(false);
-      });
-      
-      setTextInference(false);
-    }
-  }, [textInference]);
+        setTextInference(false);
+      }
+    };
+
+    generatePrompt();
+  }, [
+    textInference,
+    prompt,
+    promptLengthValue,
+    setActivity,
+    setModelError,
+    setLongPrompt,
+    setShortPrompt,
+    setInferredPrompt,
+    setTextInference
+  ]);
+
+  return null; // This is a logic-only component
 };
 
 export default PromptInference;

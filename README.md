@@ -38,7 +38,7 @@ To install and run the application:
    cd pixel-prompt-js
    npm install -g yarn
    yarn
-   npm start
+   yarn start
    ```
 
 The app will be running locally at http://localhost:19006. For different environments you can switch the port at startup, use 'npm start -- --port 8080' to start Metro(Expo's Compiler) on port 8080.

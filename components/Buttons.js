@@ -1,5 +1,4 @@
-// Buttons.js
-import React from "react";
+import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -8,188 +7,135 @@ import {
   ActivityIndicator,
   Switch,
 } from "react-native";
+import { useAppStore } from '../stores/useAppStore';
+import { commonStyles } from '../styles/commonStyles';
+import { colors, spacing, typography } from '../theme';
 
-const Buttons = ({
-  setPlaySound,
-  setInferrenceButton,
-  activity,
-  longPrompt,
-  setTextInference,
-  switchPromptFunction,
-  promptLengthValue
-}) => {
-  
-  const setThePromptValue = () => {
+const Buttons = () => {
+  const {
+    activity,
+    longPrompt,
+    promptLengthValue,
+    setTextInference,
+    switchPromptFunction,
+    setMakeSound,
+  } = useAppStore();
+
+  const handlePromptGeneration = useCallback(() => {
+    setTextInference(true);
+    setMakeSound("click");
+  }, [setTextInference, setMakeSound]);
+
+  const handlePromptSwitch = useCallback(() => {
     switchPromptFunction();
+  }, [switchPromptFunction]);
+
+  if (activity) {
+    return (
+      <ActivityIndicator
+        size="large"
+        color={colors.accent}
+        style={commonStyles.loadingIndicator}
+      />
+    );
+  }
+
+  if (!longPrompt) {
+    return null;
   }
 
   return (
-    <>
-      {activity ? (
-        <ActivityIndicator
-          size="large"
-          color="#B58392"
-          style={{ margin: 25 }}
-        />
-      ) : (
-        <>
-          {longPrompt ? (
-            <>
-              <View style={[styles.rowContainer]}>
-                <Pressable
-                  onPress={() => {
-                    
-                    setTextInference(true);
-                    setPlaySound("click");
-                  }}
-                  style={({ pressed }) => [
-                    {
-                      backgroundColor: pressed ? "#958DA5" : "#9DA58D",
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      margin: 10,
-                    },
-                  ]}
-                ></Pressable>
-                <View style={styles.columnContainer}>
-                  <View style={[styles.rowContainer]}>
-                    <Text
-                      style={[
-                        {
-                          color: promptLengthValue ? "#FFFFFF" : "#9FA8DA",
-                          marginRight: 15,
-                        },
-                        styles.sliderText,
-                      ]}
-                    >
-                      Short
-                    </Text>
-                    <Text
-                      style={[
-                        {
-                          color: promptLengthValue ? "#9FA8DA" : "#FFFFFF",
-                          marginRight: 15,
-                        },
-                        styles.sliderText,
-                      ]}
-                    >
-                      Long
-                    </Text>
-                  </View>
-                  <View style={[styles.rowContainer, { paddingBottom: 10, justifyContent: "space-between" }]}>
-                  <Switch
-                    style={{ marginRight: 40 }} 
-                    trackColor={{ false: "#958DA5", true: "#767577" }}
-                    thumbColor="#B58392"
-                    activeThumbColor="#6750A4"
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={setThePromptValue}
-                    value={promptLengthValue}
-                  />
-                  </View>
-                </View>
-              </View>
-            </>
-          ) : (
-            <Pressable
-              onPress={() => {
-                setTextInference(true);
-                setPlaySound("click");
-              }}
-              style={({ pressed }) => [
-                { backgroundColor: pressed ? "#958DA5" : "#9DA58D" },
-                styles.button,
-              ]}
-            >
-              {({ pressed }) => (
-                <Text style={styles.promptText}>
-                  {pressed ? "PROMPTED!" : "Prompt"}
-                </Text>
-              )}
-            </Pressable>
-          )}
-          <Pressable
-            onPress={() => {
-              setInferrenceButton(true);
-              setPlaySound("click");
+    <View style={styles.container}>
+      <View style={styles.rowContainer}>
+        <Pressable
+          onPress={handlePromptGeneration}
+          style={({ pressed }) => [
+            styles.promptButton,
+            pressed && styles.promptButtonPressed
+          ]}
+          accessibilityLabel="Generate prompt"
+          accessibilityHint="Generate a new AI prompt"
+        >
+          <Text style={styles.promptButtonText}>✨</Text>
+        </Pressable>
+
+        <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>
+            {promptLengthValue ? "Long" : "Short"}
+          </Text>
+          <Switch
+            trackColor={{ 
+              false: colors.buttonBackground, 
+              true: colors.success 
             }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? "#9DA58D" : "#958DA5",
-                marginBottom: 20,
-              },
-              styles.button,
-            ]}
-          >
-            {({ pressed }) => (
-              <Text style={styles.promptText}>
-                {pressed ? "INFERRED!" : "Inference"}
-              </Text>
-            )}
-          </Pressable>
-        </>
-      )}
-    </>
+            thumbColor={promptLengthValue ? colors.text : colors.textSecondary}
+            ios_backgroundColor={colors.buttonBackground}
+            onValueChange={handlePromptSwitch}
+            value={promptLengthValue}
+            style={styles.switch}
+            accessibilityLabel="Toggle prompt length"
+            accessibilityHint="Switch between short and long prompt versions"
+          />
+        </View>
+      </View>
+    </View>
   );
 };
 
-const colors = {
-  backgroundColor: "#25292e",
-  color: "#FFFFFF",
-};
-
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+
   rowContainer: {
-    backgroundColor: colors.backgroundColor,
-    display: "flex",
-    flexDirection: "row",
-    marginTop: 10,
-    overflow: "visible",
-    
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.lg,
   },
-  columnContainer: {
-    flex: 1,
-    alignItems: "center",
-    flexDirection: "column",
-  },
-  button: {
-    margin: 10,
-    borderRadius: 4,
-    paddingHorizontal: 32,
+
+  promptButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: 3,
-    fontFamily: "Sigmar",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  activityIndicator: {
-    marginLeft: 50,
+
+  promptButtonPressed: {
+    backgroundColor: colors.button,
+    transform: [{ scale: 0.95 }],
   },
-  promptText: {
-    color: colors.color,
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    letterSpacing: 2,
-    lineHeight: 30,
-    fontFamily: "Sigmar",
+
+  promptButtonText: {
+    fontSize: typography.fontSize.large,
+    textAlign: 'center',
   },
-  sliderText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    letterSpacing: 2,
-    lineHeight: 30,
-    fontFamily: "Sigmar",
+
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
-  changeButton: {
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center", // change as needed
-    elevation: 3, // for Android shadow
-    shadowColor: "#000", // for iOS shadow
-    shadowOffset: { width: 0, height: 2 }, // for iOS shadow
-    shadowOpacity: 0.25, // for iOS shadow
-    shadowRadius: 3.84, // for iOS shadow
+
+  switchLabel: {
+    color: colors.text,
+    fontSize: typography.fontSize.medium,
+    fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.system,
+    minWidth: 50,
+    textAlign: 'center',
+  },
+
+  switch: {
+    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
   },
 });
 

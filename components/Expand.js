@@ -1,75 +1,84 @@
-import React from "react";
-import { StyleSheet, Pressable, Image, Text, View } from "react-native";
+import React, { useCallback } from "react";
+import { StyleSheet, View, Text, Pressable } from "react-native";
+import { useAppStore } from '../stores/useAppStore';
+import { colors, spacing, typography } from '../theme';
 
-const Expand = ({ setPlaySound, isGuidance, visible, toggleVisibility }) => {
-  const rightImage = require("../assets/right.png");
-  const downImage = require("../assets/down.png");
+const Expand = ({ isGuidance, visible, toggleVisibility }) => {
+  const { setMakeSound } = useAppStore();
+
+  const handlePress = useCallback(() => {
+    setMakeSound("click");
+    toggleVisibility();
+  }, [setMakeSound, toggleVisibility]);
+
+  const buttonText = isGuidance ? "?" : "📁";
+  const accessibilityLabel = isGuidance ? "Toggle guidance" : "Toggle image picker";
+  const accessibilityHint = isGuidance 
+    ? "Show or hide usage guidance" 
+    : "Show or hide image gallery";
 
   return (
-    <View style={styles.expandContainer}>
-      <View style={styles.buttonColumn}>
-        <Pressable
-          style={styles.expandButton}
-          onPress={() => {
-            setPlaySound("expand");
-            toggleVisibility();
-          }}
-        >
-          <Image
-            source={visible ? downImage : rightImage}
-            style={styles.expandImage}
-          />
-        </Pressable>
-      </View>
-      <View style={styles.textColumn}>
-        <Text style={styles.expandText}>
-          {isGuidance ? "Guidance" : "Gallery"}
+    <View style={styles.container}>
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && styles.buttonPressed,
+          visible && styles.buttonActive
+        ]}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{ expanded: visible }}
+      >
+        <Text style={[
+          styles.buttonText,
+          visible && styles.buttonTextActive
+        ]}>
+          {buttonText}
         </Text>
-      </View>
-      <View style={styles.ghostColumn}></View>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  expandContainer: {
-    flexDirection: 'row',
+  container: {
     alignItems: 'center',
-    marginBottom: 10,
-    width: '100%',
+    marginVertical: spacing.sm,
   },
-  buttonColumn: {
-    flex: 2,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingLeft: 5,
-  },
-  textColumn: {
-    flex: 4,
+
+  button: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.buttonBackground,
     alignItems: 'center',
     justifyContent: 'center',
-    
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
   },
-  ghostColumn: {
-    flex: 2,
+
+  buttonPressed: {
+    backgroundColor: colors.button,
+    transform: [{ scale: 0.95 }],
   },
-  expandButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#3a3c3f",
+
+  buttonActive: {
+    backgroundColor: colors.success,
   },
-  expandImage: {
-    width: 20,
-    height: 20,
+
+  buttonText: {
+    fontSize: typography.fontSize.large,
+    color: colors.text,
+    fontWeight: typography.fontWeight.bold,
+    textAlign: 'center',
   },
-  expandText: {
-    fontSize: 24,
-    color: '#ffffff',
-    fontFamily: 'Sigmar',
-    letterSpacing: 5,
+
+  buttonTextActive: {
+    color: colors.primary,
   },
 });
 
